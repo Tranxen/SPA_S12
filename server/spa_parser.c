@@ -42,9 +42,10 @@ int spa_parser(char* data, int size){
     return -1;
   }
   
-  if(_spa == NULL)
+  /*  if(_spa == NULL)
     spa_init();
-
+  */
+  
   _spa = (struct aes_data_t*)(data);
 
   int i = 0;

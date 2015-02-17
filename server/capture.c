@@ -25,24 +25,6 @@ struct udp_hdr* e3 = NULL;
 
 static int pckt_id = 0;
 
-/*
-typedef struct session{
-  u_int ipv4_src;
-  u_int ipv4_dst;
-  u_char protocol_4;
-  u_short port_l4_src;
-  u_short port_l4_dst;
-  metrics_t metrics;
-}* session_t;
-
-typedef struct list_element{
-  session_t session;
-  struct list_element *next;
-}* list_element_t;
-
-list_element_t session_list;
-*/
-
 static void close_app(){
   fprintf(stdout,"\n------ CLOSE APP CALLED --------\n");
   pcap_breakloop(capture_handle);
@@ -186,14 +168,8 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   }
   printf("\n");
 
-  if(pkt_data[offset3+0] == 'S' &&
-     pkt_data[offset3+1] == 'P' &&
-     pkt_data[offset3+2] == 'A'){
-
-    printf("HEADER SPA !\n");
-
-    spa_parser(pkt_data+offset3+3, data_length - 3);
-
+  if(data_length == 60){ //Attention 60 octet pour spa non crypté, 64 sinon
+      spa_parser(pkt_data+offset3, data_length);
   }
   
 }
@@ -249,9 +225,10 @@ main(int argc, char *argv[]){
 
   printf("-> %x\n", test);
   
-  e1 = malloc(sizeof(struct eth_hdr));
+  /*  e1 = malloc(sizeof(struct eth_hdr));
   e2 = malloc(sizeof(struct ipv4_hdr));
   e3 = malloc(sizeof(struct udp_hdr));
+  */
   
   //Ex2 metrics = protocol_metrics_create();
   //session_list = session_list_create();
@@ -271,9 +248,9 @@ main(int argc, char *argv[]){
   //Ex2 protocol_metrics_destroy(metrics);
   //session_list_destroy(session_list);
 
-  free(e1);
+  /*  free(e1);
   free(e2);
   free(e3);
-  
+  */
   return EXIT_SUCCESS;
 }
