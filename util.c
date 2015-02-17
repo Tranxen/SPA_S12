@@ -2,7 +2,7 @@
 #include "util.h"
 #include <string.h>
 #include <stdio.h>
-#include <openssl/md5.h>
+//#include <openssl/md5.h>
 
 void conv_ip_int_to_str(int ip, char* str){
 
@@ -14,7 +14,7 @@ void conv_ip_int_to_str(int ip, char* str){
 	  ip >> 16 & 0xFF,
 	  ip >> 24 & 0xFF);
 }
-
+/*
 void md5_hash_from_string (char *string, char *hash)
 {
   int i;
@@ -28,3 +28,4 @@ void md5_hash_from_string (char *string, char *hash)
 }
 
 
+*/

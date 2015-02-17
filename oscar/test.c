@@ -49,9 +49,9 @@ void main(){
 
   strcat(buf, "SPA");
 
-  int complete_size = sizeof(struct aes_data_t)+3;
+  int complete_size = sizeof(struct aes_data_t)+0;
   
-  memcpy(buf+3, &fake, sizeof(struct aes_data_t));
+  memcpy(buf, &fake, sizeof(struct aes_data_t));
   for(i = 0; i < complete_size; i++){
     printf("%x:", buf[i]);
   }
