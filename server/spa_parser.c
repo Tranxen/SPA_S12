@@ -61,8 +61,8 @@ int spa_parser(char* data, int size){
   printf("ip : %s\n", str_ip);
   printf("port : %d\n", _spa->port);
   printf("protocol : %d (%s)\n",
-	 _spa->protocol,
-	 (_spa->protocol == 0) ? "TCP" : "UDP");
+   _spa->protocol,
+   (_spa->protocol == 0) ? "TCP" : "UDP");
   printf("md5sum : %s\n", _spa->md5sum);
 
   /*
