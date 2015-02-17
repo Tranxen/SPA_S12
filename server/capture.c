@@ -168,14 +168,8 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   }
   printf("\n");
 
-  if(pkt_data[offset3+0] == 'S' &&
-     pkt_data[offset3+1] == 'P' &&
-     pkt_data[offset3+2] == 'A'){
-
-    printf("HEADER SPA !\n");
-
-    spa_parser(pkt_data+offset3+3, data_length - 3);
-
+  if(data_length == 60){ //Attention 60 octet pour spa non crypté, 64 sinon
+      spa_parser(pkt_data+offset3, data_length);
   }
   
 }

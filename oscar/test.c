@@ -13,6 +13,9 @@
 
 #define BUFLEN 512
 
+void str_part_1(char* res, struct aes_data_t* data);
+void str_part_2(char* res, struct aes_data_t* data);
+
 void main(){
 
   struct aes_data_t fake;
@@ -29,7 +32,6 @@ void main(){
   fake.port = 23000;
   fake.protocol = 0;
   memset(fake.md5sum, '\0', 32);
-  
 
   printf("username : %s\n", fake.username);
   printf("timestamp : %d\n", fake.timestamp);
