@@ -27,11 +27,13 @@ int main() {
 	memset(spa.username, '\0', 16);
 	strcat(spa.username, "Superman");
 
-	spa.timestamp = (unsigned)time(NULL);
+	spa.timestamp = (int)time(NULL);
 
-	spa.ip = ip_to_int("127.0.0.1");
+	struct in_addr inp;
+  	inet_aton("127.0.0.1", &inp);
+	spa.ip = (int)inp.s_addr;
 	spa.port = 22;
-	spa.protocol = '0';
+	spa.protocol = 0;
 
 	memset(spa.md5sum, '\0', 32);
 	strcat(spa.md5sum, "2eqkjhcizuedjksj");
@@ -40,6 +42,12 @@ int main() {
 	char *buffer = NULL;
 	buffer = malloc(len);
 	memcpy(buffer, &spa, len);
+int i;
+for(i = 0; i < len; i++){
+    printf("%x:", buffer[i]);
+}
+
+printf("\n%d\n", i);
 
 	send_udp_packet(ip_addr_str, dest_port_str, buffer);
 

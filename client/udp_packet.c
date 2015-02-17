@@ -7,7 +7,7 @@ void send_udp_packet(char* ip_dest, char* port_dest, char* payload) {
 	u_int32_t ip_addr;
 	uint16_t  dest_port;
     int bytes_written;
-    int payload_size = strlen(payload);
+    int payload_size = sizeof(struct aes_data_t);
 
 	l = libnet_init(LIBNET_RAW4, NULL, errbuf);
 	if ( l == NULL ) {
