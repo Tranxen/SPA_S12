@@ -1,1 +1,1 @@
-gcc capture.c -o capture -lpcap
+gcc -g capture.c spa_parser.c ../util.c -o capture -lpcap
