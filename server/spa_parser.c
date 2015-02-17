@@ -65,7 +65,7 @@ int spa_parser(char* data, int size){
 	 (_spa->protocol == 0) ? "TCP" : "UDP");
   printf("md5sum : %s\n", _spa->md5sum);
 
-  
+  /*
   pthread_t threadIptables;
   args_iptables_struct*args = malloc(sizeof *args);
   args->proto = (_spa->protocol == 0) ? "TCP" : "UDP";
@@ -74,7 +74,8 @@ int spa_parser(char* data, int size){
   args->dport = _spa->port;
 
   pthread_create (& threadIptables, NULL, changeiptables, args);
-  
+  */  
+
   return 0;
 
 }
