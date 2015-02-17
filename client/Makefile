@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-Wall
 LDFLAGS=-lnet -lcrypto
 EXEC=client
-SRC= udp_packet.c encrypt.c main.c
+SRC= udp_packet.c encrypt.c ../util.c main.c
 OBJ= $(SRC:.c=.o)
 
 all: $(EXEC)
