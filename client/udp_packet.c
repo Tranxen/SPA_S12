@@ -33,14 +33,14 @@ void send_udp_packet(char* ip_dest, int port_dest, char* payload) {
 
     /* Building UDP header */
     libnet_ptag_t udp;
-    udp = libnet_build_udp(242,           			/* source port */
-                    dest_port,                 		/* dest. port */
-                    LIBNET_UDP_H + payload_size,    /* total length */ 
-                    0,           					/* autofill checksum */ 
-                    (u_int8_t*)payload, 			/* payload */
-                    payload_size, 					/* payload length */
-                    l, 								/* libnet context */
-                    0); 							/* build new protocol tag */
+    udp = libnet_build_udp(libnet_get_prand (LIBNET_PRu16),    /* random source port */
+                    dest_port,                 		           /* dest. port */
+                    LIBNET_UDP_H + payload_size,               /* total length */ 
+                    0,           					           /* autofill checksum */ 
+                    (u_int8_t*)payload, 			           /* payload */
+                    payload_size, 					           /* payload length */
+                    l, 								           /* libnet context */
+                    0); 							           /* build new protocol tag */
     if (udp == -1) {
 		fprintf(stderr, "Can't build UDP header: %s\n", libnet_geterror(l));
       	libnet_destroy(l);
