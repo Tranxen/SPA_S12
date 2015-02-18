@@ -45,7 +45,7 @@ int spa_parser(char* data, int size){
     return -1;
   }
 
-  char* decrypted_spa = decrypt("fabien brillant", data);
+  char* decrypted_spa = decrypt("fabien brillant", data, sizeof(struct aes_data_t));
   
   _spa = (struct aes_data_t*)(decrypted_spa);
 
@@ -68,7 +68,7 @@ int spa_parser(char* data, int size){
 
   char tosum[32];
   char verify_md5[32];
-  memcpy(tosum, data, 32);
+  memcpy(tosum, decrypted_spa, 32);
   md5_hash_from_string(tosum, verify_md5);
   printf("md5sum : %s\n", _spa->md5sum);
   
@@ -78,17 +78,7 @@ int spa_parser(char* data, int size){
     // APPEL DU CODE DE 20/100
     
   }
-  else{
-    printf("MD5 INCORRECTE\n");
-
-    int i = 0;
-    for (i = 0; i < 32; i++){
-
-      printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
-
-    }
-
-  }
+  else printf("MD5 INCORRECTE\n");
 
   
   /*

@@ -55,15 +55,23 @@ int main(int argc, char *argv[]) {
 
 
 	int payload_len = sizeof(struct aes_data_t) - sizeof(char) * 32;
+	printf("payload_len = %i\n", payload_len);
 	char *str_buff = NULL;
 	str_buff = malloc(payload_len);
+
 	memcpy(str_buff, &spa, payload_len);
 	memset(spa.md5sum, '\0', 32);
 	md5_hash_from_string(str_buff, spa.md5sum);
 
+	int z;
+	printf("MD5\n");
+	  for(z=0; z < 32; z++) {
+    printf("%x:", str_buff[z]);
+  }
+  printf("\n");
+
 	if (DEBUG) {
-		printf(">>> %s\n", str_buff);
-		printf(">>> %s\n", spa.md5sum);
+		printf("MD5 = %s\n", spa.md5sum);
 	}
 
 	int len = sizeof(struct aes_data_t);
@@ -81,26 +89,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	char *encrypted = encrypt(key, buffer, sizeof(struct aes_data_t));
-
-	if (DEBUG) {
-		printf("CIPHER : \n");
-
-		for(i = 0; i < len; i++){
-		    printf("%x:", buffer[i]);
-		}
-
-		printf("\nEND CIPHER : \n");
-
-		printf("\nCLEAR : \n");
-
-		char * decrypted = decrypt(key, encrypted, sizeof(struct aes_data_t));
-
-		for(i = 0; i < len; i++){
-		    printf("%x:", decrypted[i]);
-		}
-
-		printf("\nEND CLEAR : \n");
-	}
 
 
 	send_udp_packet(ip_addr_str, dest_port, encrypted);
