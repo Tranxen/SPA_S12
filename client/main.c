@@ -4,6 +4,7 @@
 #include "../util.h"
 #include "../md5.h"
 #include "encrypt.h"
+#include "../server/decrypt.h"
 
 
 #ifndef DEBUG
@@ -28,7 +29,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	char key[] = "superKey1234";
+	char key[] = "fabien brillant";
 
 	char *ip_addr_str = argv[1];
 
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
 	struct aes_data_t spa;
 
 	memset(spa.username, '\0', 16);
-	strcat(spa.username, "Superman");
+	strcat(spa.username, "Supermanoooooooo");
 
 	spa.timestamp = (int)time(NULL);
 
@@ -69,21 +70,36 @@ int main(int argc, char *argv[]) {
 	char *buffer = NULL;
 	buffer = malloc(len);
 	memcpy(buffer, &spa, len);
+	int i;
 
 	if (DEBUG) {
-		int i;
+		
 		for(i = 0; i < len; i++){
 		    printf("%x:", buffer[i]);
 		}
 		printf("\n%d\n", i);
 	}
 
-	char *encrypted = NULL;
-	encrypted = malloc(16);
-	encrypted = encrypt(key, buffer);
+	char *encrypted = encrypt(key, buffer);
 
 	if (DEBUG) {
-		printf("Encrypted : \n%s\n", encrypted);
+		printf("CIPHER : \n");
+
+		for(i = 0; i < len; i++){
+		    printf("%x:", buffer[i]);
+		}
+
+		printf("\nEND CIPHER : \n");
+
+		printf("\nCLEAR : \n");
+
+		char * decrypted = decrypt(key, encrypted);
+
+		for(i = 0; i < len; i++){
+		    printf("%x:", decrypted[i]);
+		}
+
+		printf("\nEND CLEAR : \n");
 	}
 
 
