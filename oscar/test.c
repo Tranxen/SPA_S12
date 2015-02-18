@@ -11,6 +11,7 @@
 
 #include "udp_sock.h"
 #include "../md5.h"
+#include "encrypt.h"
 
 #define BUFLEN 512
 
@@ -61,6 +62,10 @@ void main(){
   int complete_size = sizeof(struct aes_data_t)+0;
   
   memcpy(buf, &fake, sizeof(struct aes_data_t));
+
+  char *buf_encrypted = encrypt("fabien brillant",
+				
+
   for(i = 0; i < complete_size; i++){
     printf("%x:", buf[i]);
   }
