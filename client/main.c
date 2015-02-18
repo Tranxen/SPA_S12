@@ -3,6 +3,7 @@
 #include <time.h>
 #include "../util.h"
 #include "../md5.h"
+#include "encrypt.h"
 
 
 #ifndef DEBUG
@@ -26,6 +27,8 @@ int main(int argc, char *argv[]) {
 		printf("Usage : %s IP\n", argv[0]);
 		return 0;
 	}
+
+	char key[] = "superKey1234";
 
 	char *ip_addr_str = argv[1];
 
@@ -75,9 +78,19 @@ int main(int argc, char *argv[]) {
 		printf("\n%d\n", i);
 	}
 
-	send_udp_packet(ip_addr_str, dest_port, buffer);
+	char *encrypted = NULL;
+	encrypted = malloc(16);
+	encrypted = encrypt(key, buffer);
+
+	if (DEBUG) {
+		printf("Encrypted : \n%s\n", encrypted);
+	}
+
+
+	send_udp_packet(ip_addr_str, dest_port, encrypted);
 
 	free(buffer);
+	free(encrypted);
 
 
 	return 0;
