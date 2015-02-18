@@ -1,0 +1,4 @@
+*.o
+client/client
+server/capture
+server/server
