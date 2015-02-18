@@ -8,12 +8,17 @@
 
 //   char username[16];
 //   unsigned int timestamp;
-//   unsigned int ip;
+//   unsigned int ip_src;
+//   unsigned int ip_dest;
 //   unsigned short port;
 //   char protocol;
 //   char md5sum[32];
 
 // };
+
+#define TCP 0
+#define UDP 1
+
 int main() {
 	char ip_addr_str[] = "127.0.0.1";
 	char dest_port_str[] = "7777";
@@ -28,18 +33,26 @@ int main() {
 	spa.timestamp = (int)time(NULL);
 
 	struct in_addr inp;
+
+	inet_aton("127.0.0.1", &inp);
+	spa.ip_src = (int)inp.s_addr;
+
   	inet_aton("127.0.0.1", &inp);
-	spa.ip = (int)inp.s_addr;
+	spa.ip_dest = (int)inp.s_addr;
+
 	spa.port = 22;
-	spa.protocol = 0;
+	spa.protocol = TCP;
 
 
 	int payload_len = sizeof(struct aes_data_t) - sizeof(char) * 32;
-	char *md5_buffer = NULL;
-	md5_buffer = malloc(payload_len);
-	memcpy(md5_buffer, &spa, payload_len);
+	char *str_buff = NULL;
+	str_buff = malloc(payload_len);
+	memcpy(str_buff, &spa, payload_len);
 	memset(spa.md5sum, '\0', 32);
-	strcat(spa.md5sum, md5_buffer);
+	md5_hash_from_string(str_buff, spa.md5sum);
+	
+printf(">>> %s\n", str_buff);
+printf(">>> %s\n", spa.md5sum);
 
 	int len = sizeof(struct aes_data_t);
 	char *buffer = NULL;
