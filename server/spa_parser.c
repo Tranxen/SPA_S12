@@ -1,6 +1,7 @@
 #include "../common.h"
 #include "../md5.h"
 #include "spa_parser.h"
+#include "decrypt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -43,8 +44,10 @@ int spa_parser(char* data, int size){
     printf("\t - %d instead of %d\n", size, sizeof(struct aes_data_t));
     return -1;
   }
+
+  char* decrypted_spa = decrypt("fabien brillant", data);
   
-  _spa = (struct aes_data_t*)(data);
+  _spa = (struct aes_data_t*)(decrypted_spa);
 
   int i = 0;
 
@@ -71,6 +74,9 @@ int spa_parser(char* data, int size){
   
   if(strcmp(_spa->md5sum, verify_md5) == 0){
     printf("MD5 CORRECTE\n");
+
+    // APPEL DU CODE DE 20/100
+    
   }
   else printf("MD5 INCORRECTE\n");
 
