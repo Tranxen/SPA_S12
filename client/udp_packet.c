@@ -1,22 +1,43 @@
 #include "udp_packet.h"
 
-void send_udp_packet(char* ip_dest, int port_dest, char* payload) {
+libnet_t* init_libnet_context(char* device) {
+    libnet_t *l;
+    char errbuf[LIBNET_ERRBUF_SIZE];
 
-	libnet_t *l;
-	char errbuf[LIBNET_ERRBUF_SIZE];
+    l = libnet_init(LIBNET_RAW4, device, errbuf);
+
+    if ( l == NULL ) {
+        fprintf(stderr, "libnet_init() failed: %s\n", errbuf);
+        exit(EXIT_FAILURE);
+    }
+
+    return l;
+}
+
+char* get_ip_addr(char* device) {
+    
+    libnet_t *l = init_libnet_context(device);
+
+    u_int32_t ipv4_addr;
+    ipv4_addr = libnet_get_ipaddr4(l);
+
+    if ( ipv4_addr != -1 )
+        return libnet_addr2name4(ipv4_addr, LIBNET_DONT_RESOLVE);
+    else 
+        return NULL;
+}
+
+void send_udp_packet(char* device, char* ip_dest, int port_dest, char* payload) {
+
+	libnet_t *l = init_libnet_context(device);
+
 	u_int32_t ip_addr;
 	uint16_t  dest_port;
     int bytes_written;
     int payload_size = sizeof(struct aes_data_t);
 
-	l = libnet_init(LIBNET_RAW4, NULL, errbuf);
-	if ( l == NULL ) {
-		fprintf(stderr, "libnet_init() failed: %s\n", errbuf);
-		exit(EXIT_FAILURE);
-	}
-
+    
 	/* Generating a random id */
-
     libnet_seed_prand (l);
 
 
