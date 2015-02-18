@@ -18,7 +18,7 @@
 void str_part_1(char* res, struct aes_data_t* data);
 void str_part_2(char* res, struct aes_data_t* data);
 
-void main(){
+int main(){
 
   struct aes_data_t fake;
 
@@ -63,7 +63,7 @@ void main(){
   
   memcpy(buf, &fake, sizeof(struct aes_data_t));
 
-  char *buf_encrypted = encrypt("fabien brillant",
+  //  char *buf_encrypted = encrypt("fabien brillant",
 				
 
   for(i = 0; i < complete_size; i++){
