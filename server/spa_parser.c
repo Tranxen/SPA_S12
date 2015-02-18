@@ -6,6 +6,13 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+#define OPTD_IP_CHECK 0x1
+#define OPTD_SIZE_CHECK 0x2
+#define OPTD_MD5_CHECK 0x4
+#define OPTD_USELESS_1 0x8
+#define OPTD_USELESS_2 0x10
+
+#define OPT_DEBUG (0x4 | 0x8) //FAUT PAS OUBLIER LES ()
 
 char* IPCLIENT ="182.168.2.2";
 typedef struct {
@@ -39,6 +46,8 @@ void spa_init(){
 
 int spa_parser(char* data, int size, int pkt_ip_src){
 
+  printf("\nOPT_DEBUG = %x\n", OPT_DEBUG);
+  
   if(size != sizeof(struct aes_data_t)){
     printf("ERREUR : taille du paquet SPA non valide\n");
     printf("\t - %d instead of %d\n", size, sizeof(struct aes_data_t));
@@ -49,12 +58,19 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   
   _spa = (struct aes_data_t*)(decrypted_spa);
 
-  if(_spa->ip_src != pkt_ip_src){
+  printf("OPT_DEBUG : %d\n", OPT_DEBUG);
+  printf("OPTD_IP : %d\n", OPTD_IP_CHECK);
+  printf("RES : %d\n", 0x06 & 0x01);
+  
+  if((OPT_DEBUG & OPTD_IP_CHECK) != 0 &&
+     _spa->ip_src != pkt_ip_src){
     printf("ERREUR : l'ip source du paquet ne correspond pas à l'ip contenu dans spa\n");
+    
     return -1;
   }
   
   int i = 0;
+
 
   printf("--\n");
     
@@ -77,20 +93,23 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   char verify_md5[32];
   memcpy(tosum, decrypted_spa, 32);
   md5_hash_from_string(tosum, verify_md5);
-  printf("md5sum : %s\n", _spa->md5sum);
-  
-  if(strncmp(_spa->md5sum, verify_md5, 32) == 0){
-    printf("MD5 CORRECTE\n");
 
-    // APPEL DU CODE DE 20/100
+
+  if(OPT_DEBUG & OPTD_MD5_CHECK){
+    printf("md5sum : %s\n", _spa->md5sum);
+    if(strncmp(_spa->md5sum, verify_md5, 32) == 0){
+      printf("MD5 CORRECTE\n");
+
+      // APPEL DU CODE DE 20/100
     
-  }
-  else{
-    printf("MD5 INCORRECTE\n");
-    for (i = 0; i < 32; i++){
-      printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
     }
+    else{
+      printf("MD5 INCORRECTE\n");
+      for (i = 0; i < 32; i++){
+	printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
+      }
     
+    }
   }
     
   /*
@@ -104,6 +123,8 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   pthread_create (& threadIptables, NULL, changeiptables, args);
   */  
 
+  
+  
   return 0;
 
 }

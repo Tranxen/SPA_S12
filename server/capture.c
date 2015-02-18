@@ -168,19 +168,22 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   data_raw = malloc(sizeof(char)*data_length);
   memset(data_raw, '\0', data_length);
   */
-  
+
+
   printf("DEBUG RAW DATA (hex) : ");
   for(i = offset3; i < offset3 + data_length; i++){
     printf("%x:", pkt_data[i]);
   }
   printf("\n");
 
+  if(DEBUG_PKT >= 1){
   printf("DEBUG RAW DATA (ascii) : ");
   for(i = offset3; i < offset3 + data_length; i++){
     printf("%c", pkt_data[i]);
   }
   printf("\n");
-
+  }
+  
   if(data_length == sizeof(struct aes_data_t)){ //Attention 60 octet pour spa non crypté, 64 sinon
     spa_parser(pkt_data+offset3, data_length, e2->ip_src);
   }

@@ -60,9 +60,9 @@ char* decrypt(char* key, char* ciphertext, int ciphertext_len){
   //text_len = strlen(ciphertext)+1;
   text_len = ciphertext_len;
   plaintext = aes_decrypt(&de, (unsigned char *)ciphertext, &text_len);
-  printf("cipher text : %s\n", ciphertext);
+  /*printf("cipher text : %s\n", ciphertext);
   printf("key : %s\n", key);
   printf("plain text : %s\n", plaintext);
-
+  */
   return(char*) plaintext;
 }
