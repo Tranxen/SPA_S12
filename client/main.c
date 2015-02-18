@@ -1,5 +1,4 @@
-
-#include "udp_packet.h"
+#include "network_util.h"
 #include <time.h>
 #include "../util.h"
 #include "../md5.h"

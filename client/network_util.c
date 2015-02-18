@@ -1,4 +1,4 @@
-#include "udp_packet.h"
+#include "network_util.h"
 
 libnet_t* init_libnet_context(char* device) {
     libnet_t *l;

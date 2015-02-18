@@ -3,7 +3,7 @@ CFLAGS=-Wall
 CFLAGS+=-DDEBUG
 LDFLAGS=-lnet -lcrypto -lssl
 EXEC=client
-SRC= udp_packet.c encrypt.c ../util.c ../md5.c main.c
+SRC= network_util.c encrypt.c ../util.c ../md5.c main.c
 OBJ= $(SRC:.c=.o)
 
 all: $(EXEC)
