@@ -13,6 +13,8 @@
 
 #define PACKET_READ_LENGTH 64
 
+#define DEBUG_PKT 0
+
 static void signal_handler(int);
 static void pkt_process(u_char *, const struct pcap_pkthdr *,
 		const u_char *);
@@ -86,25 +88,28 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   /* DEBUG STRUCT ETHERNET */
 
   printf("\n==== %d ====\n", pckt_id); pckt_id++;
-  
+
+
   printf("DEBUG RAW eth_hdr : ");
   for(i = 0; i < 14; i++){
     printf("%x:", pkt_data[i]);
   }
   printf("\n");
-    
-  printf("\tmac src : ");
-  for(i = 0; i < 6; i++){
-    printf("%x:", e1->eth_address_src[i]);
-  }
-  printf("\n");
-  printf("\tmac dst : ");
-  for(i = 0; i < 6; i++){
-    printf("%x:", e1->eth_adress_dst[i]);
-  }
-  printf("\n");
-  printf("\ttype : %x\n", e1->eth_type);
 
+  if(DEBUG_PKT >= 1){
+    printf("\tmac src : ");
+    for(i = 0; i < 6; i++){
+      printf("%x:", e1->eth_address_src[i]);
+    }
+    printf("\n");
+    printf("\tmac dst : ");
+    for(i = 0; i < 6; i++){
+      printf("%x:", e1->eth_adress_dst[i]);
+    }
+    printf("\n");
+    printf("\ttype : %x\n", e1->eth_type);
+  }
+  
   // =========== LECTURE IP =======================
 
   printf("DEBUG RAW ipv4_hdr : ");
@@ -113,14 +118,19 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   }
   printf("\n");
 
-  printf("\thdrlen : %x\n", e2->ip_hdr_len);
-  printf("\tip_version : %x\n", e2->ip_version);
-  printf("\tip_tos : %x\n", e2->ip_tos);
-  printf("\ttotal_length : %d\n", ntohs(e2->total_length)); // inversion d'octet sur u_short...
-  printf("\ttp_id : %x\n", htons(e2->ip_id));
-  printf("\tip_ttl : %d\n", e2->ip_ttl);
-  printf("\tip_protocol : %x (%d)\n", e2->ip_protocol, e2->ip_protocol);
-     printf("\tip src : %d.%d.%d.%d\n",
+  if(DEBUG_PKT >= 1){
+  
+    printf("\thdrlen : %x\n", e2->ip_hdr_len);
+    printf("\tip_version : %x\n", e2->ip_version);
+    printf("\tip_tos : %x\n", e2->ip_tos);
+    printf("\ttotal_length : %d\n", ntohs(e2->total_length)); // inversion d'octet sur u_short...
+    printf("\ttp_id : %x\n", htons(e2->ip_id));
+    printf("\tip_ttl : %d\n", e2->ip_ttl);
+    printf("\tip_protocol : %x (%d)\n", e2->ip_protocol, e2->ip_protocol);
+
+  }
+
+  printf("\tip src : %d.%d.%d.%d\n",
 	 e2->ip_src & 0xFF,
 	 e2->ip_src >> 8 & 0xFF,
 	 e2->ip_src >> 16 & 0xFF,
@@ -131,8 +141,8 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
 	 e2->ip_dst >> 8 & 0xFF,
 	 e2->ip_dst >> 16 & 0xFF,
 	 e2->ip_dst >> 24 & 0xFF);
-	 
 
+  
   // =========== LECTURE UDP =======================
   
   printf("DEBUG RAW udp_hdr : ");
@@ -141,11 +151,13 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   }
   printf("\n");
 
-  printf("\tsrc port : %d\n", ntohs(e3->src_port));
-  printf("\tdst port : %d\n", ntohs(e3->dst_port));
-  printf("\tlength   : %d\n", ntohs(e3->length));
-  printf("\tchecksum : %x\n", ntohs(e3->checksum));
-
+  if(DEBUG_PKT >= 1){
+    printf("\tsrc port : %d\n", ntohs(e3->src_port));
+    printf("\tdst port : %d\n", ntohs(e3->dst_port));
+    printf("\tlength   : %d\n", ntohs(e3->length));
+    printf("\tchecksum : %x\n", ntohs(e3->checksum));
+  }
+  
   // ============ LECTURE DATA =====================
 
   int data_length = ntohs(e3->length) - sizeof(struct udp_hdr);
