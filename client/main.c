@@ -15,15 +15,6 @@
 
 // };
 int main() {
-
-
-	char input[] = "Coucou";
-	char output[2*MD5_DIGEST_LENGTH+1];
-	md5_hash_from_string(input, output);
-    printf("%s\n", output);
-
-	return 0;
-
 	char ip_addr_str[] = "127.0.0.1";
 	char dest_port_str[] = "7777";
 
@@ -42,18 +33,23 @@ int main() {
 	spa.port = 22;
 	spa.protocol = 0;
 
+
+	int payload_len = sizeof(struct aes_data_t) - sizeof(char) * 32;
+	char *md5_buffer = NULL;
+	md5_buffer = malloc(payload_len);
+	memcpy(md5_buffer, &spa, payload_len);
 	memset(spa.md5sum, '\0', 32);
-	strcat(spa.md5sum, "2eqkjhcizuedjksj");
+	strcat(spa.md5sum, md5_buffer);
 
 	int len = sizeof(struct aes_data_t);
 	char *buffer = NULL;
 	buffer = malloc(len);
 	memcpy(buffer, &spa, len);
+
 int i;
 for(i = 0; i < len; i++){
     printf("%x:", buffer[i]);
 }
-
 printf("\n%d\n", i);
 
 	send_udp_packet(ip_addr_str, dest_port_str, buffer);
