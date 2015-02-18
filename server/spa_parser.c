@@ -78,6 +78,7 @@ int spa_parser(char* data, int size){
     // APPEL DU CODE DE 20/100
     
   }
+<<<<<<< HEAD
   else{
     printf("MD5 INCORRECTE\n");
   }
@@ -87,6 +88,9 @@ int spa_parser(char* data, int size){
     printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
 
   }
+=======
+  else printf("MD5 INCORRECTE\n");
+>>>>>>> 0542f8c7f65eb727b68e386b0cb8dde2802e943b
 
   
   /*

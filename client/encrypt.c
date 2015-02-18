@@ -57,7 +57,7 @@ unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len
 }
 
 
-char* encrypt(char* key, char* text){
+char* encrypt(char* key, char* text, int ciphertext_len){
   EVP_CIPHER_CTX en;
   unsigned int salt[] = {12345, 54321};
   unsigned char* key_data;
@@ -71,7 +71,7 @@ char* encrypt(char* key, char* text){
     exit(EXIT_FAILURE);
   }
   // text_len = strlen(text)+1;
-  text_len = 64;
+  text_len = ciphertext_len;
   ciphertext = aes_encrypt(&en, (unsigned char *)text, &text_len);
   printf("plain text : %s\n", text);
   printf("key : %s\n", key);
