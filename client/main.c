@@ -16,6 +16,11 @@
 
 // };
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+	
+
 #define TCP 0
 #define UDP 1
 
@@ -50,20 +55,24 @@ int main() {
 	memcpy(str_buff, &spa, payload_len);
 	memset(spa.md5sum, '\0', 32);
 	md5_hash_from_string(str_buff, spa.md5sum);
-	
-printf(">>> %s\n", str_buff);
-printf(">>> %s\n", spa.md5sum);
+
+	if (DEBUG) {
+		printf(">>> %s\n", str_buff);
+		printf(">>> %s\n", spa.md5sum);
+	}
 
 	int len = sizeof(struct aes_data_t);
 	char *buffer = NULL;
 	buffer = malloc(len);
 	memcpy(buffer, &spa, len);
 
-int i;
-for(i = 0; i < len; i++){
-    printf("%x:", buffer[i]);
-}
-printf("\n%d\n", i);
+	if (DEBUG) {
+		int i;
+		for(i = 0; i < len; i++){
+		    printf("%x:", buffer[i]);
+		}
+		printf("\n%d\n", i);
+	}
 
 	send_udp_packet(ip_addr_str, dest_port_str, buffer);
 

@@ -1,5 +1,6 @@
 CC=gcc
 CFLAGS=-Wall
+CFLAGS+=-DDEBUG
 LDFLAGS=-lnet -lcrypto -lssl
 EXEC=client
 SRC= udp_packet.c encrypt.c ../util.c ../md5.c main.c
