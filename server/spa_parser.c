@@ -37,7 +37,7 @@ void spa_init(){
 
 }
 
-int spa_parser(char* data, int size){
+int spa_parser(char* data, int size, int pkt_ip_src){
 
   if(size != sizeof(struct aes_data_t)){
     printf("ERREUR : taille du paquet SPA non valide\n");
@@ -49,6 +49,11 @@ int spa_parser(char* data, int size){
   
   _spa = (struct aes_data_t*)(decrypted_spa);
 
+  if(_spa->ip_src != pkt_ip_src){
+    printf("ERREUR : l'ip source du paquet ne correspond pas à l'ip contenu dans spa\n");
+    return -1;
+  }
+  
   int i = 0;
 
   printf("--\n");
@@ -57,6 +62,8 @@ int spa_parser(char* data, int size){
   printf("timestamp : %d\n", _spa->timestamp);
   char str_ip[16];
 
+  
+  
   conv_ip_int_to_str(_spa->ip_src, &str_ip);
   printf("ip src: %s\n", str_ip);
   conv_ip_int_to_str(_spa->ip_dst, &str_ip);
@@ -72,27 +79,20 @@ int spa_parser(char* data, int size){
   md5_hash_from_string(tosum, verify_md5);
   printf("md5sum : %s\n", _spa->md5sum);
   
-  if(strcmp(_spa->md5sum, verify_md5) == 0){
+  if(strncmp(_spa->md5sum, verify_md5, 32) == 0){
     printf("MD5 CORRECTE\n");
 
     // APPEL DU CODE DE 20/100
     
   }
-<<<<<<< HEAD
   else{
     printf("MD5 INCORRECTE\n");
+    for (i = 0; i < 32; i++){
+      printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
+    }
+    
   }
-
-  for (i = 0; i < 32; i++){
-
-    printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
-
-  }
-=======
-  else printf("MD5 INCORRECTE\n");
->>>>>>> 0542f8c7f65eb727b68e386b0cb8dde2802e943b
-
-  
+    
   /*
   pthread_t threadIptables;
   args_iptables_struct*args = malloc(sizeof *args);
