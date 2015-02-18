@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	struct aes_data_t spa;
 
 	memset(spa.username, '\0', 16);
-	strcat(spa.username, "Supermanoooooooo");
+	strcat(spa.username, "Supermanoooooob");
 
 	spa.timestamp = (int)time(NULL);
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 		printf("\n%d\n", i);
 	}
 
-	char *encrypted = encrypt(key, buffer);
+	char *encrypted = encrypt(key, buffer, sizeof(struct aes_data_t));
 
 	if (DEBUG) {
 		printf("CIPHER : \n");
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
 		printf("\nCLEAR : \n");
 
-		char * decrypted = decrypt(key, encrypted);
+		char * decrypted = decrypt(key, encrypted, sizeof(struct aes_data_t));
 
 		for(i = 0; i < len; i++){
 		    printf("%x:", decrypted[i]);

@@ -43,7 +43,7 @@ unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *le
   return plaintext;
 }
 
-char* decrypt(char* key, char* ciphertext){
+char* decrypt(char* key, char* ciphertext, int ciphertext_len){
   EVP_CIPHER_CTX de;
   unsigned int salt[] = {12345, 54321};
   unsigned char* key_data;
@@ -58,7 +58,7 @@ char* decrypt(char* key, char* ciphertext){
     exit(EXIT_FAILURE);
   }
   //text_len = strlen(ciphertext)+1;
-  text_len = 64;
+  text_len = ciphertext_len;
   plaintext = aes_decrypt(&de, (unsigned char *)ciphertext, &text_len);
   printf("cipher text : %s\n", ciphertext);
   printf("key : %s\n", key);
