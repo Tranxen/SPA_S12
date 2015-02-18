@@ -53,32 +53,16 @@ int main(int argc, char *argv[]) {
 
 
 	int payload_len = sizeof(struct aes_data_t) - sizeof(char) * 32;
-	char *str_buff = NULL;
-	str_buff = malloc(payload_len);
+	char *payload = NULL;
+	payload = malloc(payload_len);
 
-	memcpy(str_buff, &spa, payload_len);
+	memcpy(payload, &spa, payload_len);
 	memset(spa.md5sum, '\0', payload_len);
-	md5_hash_from_string(str_buff, spa.md5sum);
+	md5_hash_from_string(payload, spa.md5sum);
 
+	char *cipher_text = encrypt(key, (char*)&spa, sizeof(struct aes_data_t));
 
-	int len = sizeof(struct aes_data_t);
-	char buffer[len];
-	memset(buffer, '\0', len);
-	memcpy(buffer, &spa, len);
-	int i;
-
-	if (DEBUG) {
-		
-		for(i = 0; i < len; i++){
-		    printf("%x:", buffer[i]);
-		}
-		printf("\n%d\n", i);
-	}
-
-	char *encrypted = encrypt(key, buffer, sizeof(struct aes_data_t));
-
-
-	send_udp_packet(ip_addr_str, dest_port, encrypted);
+	send_udp_packet(ip_addr_str, dest_port, cipher_text);
 
 	return 0;
 }
