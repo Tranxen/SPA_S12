@@ -1,20 +1,9 @@
-// include de common.h
+
 #include "udp_packet.h"
 #include <time.h>
 #include "../util.h"
 #include "../md5.h"
 
-// struct aes_data_t{
-
-//   char username[16];
-//   unsigned int timestamp;
-//   unsigned int ip_src;
-//   unsigned int ip_dest;
-//   unsigned short port;
-//   char protocol;
-//   char md5sum[32];
-
-// };
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -42,8 +31,6 @@ int main(int argc, char *argv[]) {
 
 	int dest_port = rand_range(1, 49151);
 
-	//char payload[] = "SPACOOOLL";
-
 	struct aes_data_t spa;
 
 	memset(spa.username, '\0', 16);
@@ -56,8 +43,8 @@ int main(int argc, char *argv[]) {
 	inet_aton("127.0.0.1", &inp);
 	spa.ip_src = (int)inp.s_addr;
 
-  	inet_aton("127.0.0.1", &inp);
-	spa.ip_dest = (int)inp.s_addr;
+  	inet_aton("192.168.1.77", &inp);
+	spa.ip_dst = (int)inp.s_addr;
 
 	spa.port = 22;
 	spa.protocol = TCP;
