@@ -1,5 +1,5 @@
-#ifndef UDP_PACKET_H
-#define UDP_PACKET_H
+#ifndef NETWORK_UTIL_H
+#define NETWORK_UTIL_H
 
 #include <stdio.h>
 #include <stdlib.h>
