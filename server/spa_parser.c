@@ -1,8 +1,10 @@
 #include "../common.h"
+#include "../md5.h"
 #include "spa_parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+
 
 char* IPCLIENT ="182.168.2.2";
 typedef struct {
@@ -42,10 +44,6 @@ int spa_parser(char* data, int size){
     return -1;
   }
   
-  /*  if(_spa == NULL)
-    spa_init();
-  */
-  
   _spa = (struct aes_data_t*)(data);
 
   int i = 0;
@@ -56,15 +54,27 @@ int spa_parser(char* data, int size){
   printf("timestamp : %d\n", _spa->timestamp);
   char str_ip[16];
 
-  conv_ip_int_to_str(_spa->ip, &str_ip);
-  
-  printf("ip : %s\n", str_ip);
+  conv_ip_int_to_str(_spa->ip_src, &str_ip);
+  printf("ip src: %s\n", str_ip);
+  conv_ip_int_to_str(_spa->ip_dst, &str_ip);
+  printf("ip dest: %s\n", str_ip);
   printf("port : %d\n", _spa->port);
   printf("protocol : %d (%s)\n",
    _spa->protocol,
    (_spa->protocol == 0) ? "TCP" : "UDP");
-  printf("md5sum : %s\n", _spa->md5sum);
 
+  char tosum[32];
+  char verify_md5[32];
+  memcpy(tosum, data, 32);
+  md5_hash_from_string(tosum, verify_md5);
+  printf("md5sum : %s\n", _spa->md5sum);
+  
+  if(strcmp(_spa->md5sum, verify_md5) == 0){
+    printf("MD5 CORRECTE\n");
+  }
+  else printf("MD5 INCORRECTE\n");
+
+  
   /*
   pthread_t threadIptables;
   args_iptables_struct*args = malloc(sizeof *args);
