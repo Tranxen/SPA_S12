@@ -4,7 +4,6 @@
 #include "../util.h"
 #include "../md5.h"
 #include "encrypt.h"
-#include "../server/decrypt.h"
 
 
 #ifndef DEBUG
