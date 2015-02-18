@@ -1,8 +1,8 @@
 // include de common.h
-#include "../common.h"
 #include "udp_packet.h"
 #include <time.h>
 #include "../util.h"
+#include "../md5.h"
 
 // struct aes_data_t{
 
@@ -14,8 +14,15 @@
 //   char md5sum[32];
 
 // };
-
 int main() {
+
+
+	char input[] = "Coucou";
+	char output[2*MD5_DIGEST_LENGTH+1];
+	md5_hash_from_string(input, output);
+    printf("%s\n", output);
+
+	return 0;
 
 	char ip_addr_str[] = "127.0.0.1";
 	char dest_port_str[] = "7777";
