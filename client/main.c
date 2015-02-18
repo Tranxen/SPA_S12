@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
 
 	srand(time(NULL));
 
-
 	if (argc != 2) {
 		printf("Usage : %s IP\n", argv[0]);
 		return 0;
@@ -54,28 +53,17 @@ int main(int argc, char *argv[]) {
 
 
 	int payload_len = sizeof(struct aes_data_t) - sizeof(char) * 32;
-	printf("payload_len = %i\n", payload_len);
 	char *str_buff = NULL;
 	str_buff = malloc(payload_len);
 
 	memcpy(str_buff, &spa, payload_len);
-	memset(spa.md5sum, '\0', 32);
+	memset(spa.md5sum, '\0', payload_len);
 	md5_hash_from_string(str_buff, spa.md5sum);
 
-	int z;
-	printf("MD5\n");
-	  for(z=0; z < 32; z++) {
-    printf("%x:", str_buff[z]);
-  }
-  printf("\n");
-
-	if (DEBUG) {
-		printf("MD5 = %s\n", spa.md5sum);
-	}
 
 	int len = sizeof(struct aes_data_t);
-	char *buffer = NULL;
-	buffer = malloc(len);
+	char buffer[len];
+	memset(buffer, '\0', len);
 	memcpy(buffer, &spa, len);
 	int i;
 
@@ -91,10 +79,6 @@ int main(int argc, char *argv[]) {
 
 
 	send_udp_packet(ip_addr_str, dest_port, encrypted);
-
-	free(buffer);
-	free(encrypted);
-
 
 	return 0;
 }
