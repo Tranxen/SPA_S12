@@ -7,6 +7,6 @@
 #include <inttypes.h>
 #include "../common.h"
 
-void send_udp_packet(char* ip_dest, char* port_dest, char* payload);
+void send_udp_packet(char* ip_dest, int port_dest, char* payload);
 
 #endif

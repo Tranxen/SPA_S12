@@ -24,9 +24,23 @@
 #define TCP 0
 #define UDP 1
 
-int main() {
-	char ip_addr_str[] = "127.0.0.1";
-	char dest_port_str[] = "7777";
+int rand_range(int min_n, int max_n) {
+    return rand() % (max_n - min_n + 1) + min_n;
+}
+
+int main(int argc, char *argv[]) {
+
+	srand(time(NULL));
+
+
+	if (argc != 2) {
+		printf("Usage : %s IP\n", argv[0]);
+		return 0;
+	}
+
+	char *ip_addr_str = argv[1];
+
+	int dest_port = rand_range(1, 49151);
 
 	//char payload[] = "SPACOOOLL";
 
@@ -74,7 +88,7 @@ int main() {
 		printf("\n%d\n", i);
 	}
 
-	send_udp_packet(ip_addr_str, dest_port_str, buffer);
+	send_udp_packet(ip_addr_str, dest_port, buffer);
 
 	free(buffer);
 

@@ -1,6 +1,6 @@
 #include "udp_packet.h"
 
-void send_udp_packet(char* ip_dest, char* port_dest, char* payload) {
+void send_udp_packet(char* ip_dest, int port_dest, char* payload) {
 
 	libnet_t *l;
 	char errbuf[LIBNET_ERRBUF_SIZE];
@@ -28,8 +28,8 @@ void send_udp_packet(char* ip_dest, char* port_dest, char* payload) {
             exit(EXIT_FAILURE);
     }
 
-    sscanf (port_dest, "%" SCNd16 "\n", &dest_port); /* Cast to uint16_t */
-
+    //sscanf (port_dest, "%" SCNd16 "\n", &dest_port); /* Cast to uint16_t */
+    dest_port = (uint16_t)port_dest;
 
     /* Building UDP header */
     libnet_ptag_t udp;
