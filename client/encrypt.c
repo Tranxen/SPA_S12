@@ -70,7 +70,8 @@ char* encrypt(char* key, char* text){
     printf("Couldn't initialize AES cypher\n");
     exit(EXIT_FAILURE);
   }
-  text_len = strlen(text)+1;
+  // text_len = strlen(text)+1;
+  text_len = 64;
   ciphertext = aes_encrypt(&en, (unsigned char *)text, &text_len);
   printf("plain text : %s\n", text);
   printf("key : %s\n", key);

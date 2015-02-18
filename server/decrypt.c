@@ -57,7 +57,8 @@ char* decrypt(char* key, char* ciphertext){
     printf("Couldn't initialize AES cypher\n");
     exit(EXIT_FAILURE);
   }
-  text_len = strlen(ciphertext)+1;
+  //text_len = strlen(ciphertext)+1;
+  text_len = 64;
   plaintext = aes_decrypt(&de, (unsigned char *)ciphertext, &text_len);
   printf("cipher text : %s\n", ciphertext);
   printf("key : %s\n", key);
