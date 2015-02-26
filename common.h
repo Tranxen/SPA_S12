@@ -1,14 +1,14 @@
-
+#include <stdint.h>
 
 struct aes_data_t{
 
-  char username[16];
-  unsigned int timestamp;
-  unsigned int ip_src;
-  unsigned int ip_dst;
-  unsigned short port;
-  char protocol;
-  char md5sum[32];
+  uint8_t username[16];
+  uint32_t timestamp;
+  uint32_t ip_src;
+  uint32_t ip_dst;
+  uint16_t port;
+  uint8_t protocol;
+  uint8_t md5sum[32];
 
 };
 
