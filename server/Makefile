@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=
 LDFLAGS=-lpcap -lcrypto -lssl
 EXEC=server
-SRC= capture.c decrypt.c spa_parser.c ../util.c ../md5.c main.c
+SRC= capture.c decrypt.c spa_parser.c antireplay.c txlist.c ../util.c ../md5.c main.c
 OBJ= $(SRC:.c=.o)
 
 all: $(EXEC)

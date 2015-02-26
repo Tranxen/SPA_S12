@@ -2,6 +2,7 @@
 #include "../md5.h"
 #include "spa_parser.h"
 #include "decrypt.h"
+#include "antireplay.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -9,7 +10,7 @@
 #define OPTD_IP_CHECK 0x1
 #define OPTD_SIZE_CHECK 0x2
 #define OPTD_MD5_CHECK 0x4
-#define OPTD_USELESS_1 0x8
+#define OPTD_REPLAY_CHECK 0x8
 #define OPTD_USELESS_2 0x10
 
 #define OPT_DEBUG (0x4 | 0x8) //FAUT PAS OUBLIER LES ()
@@ -104,6 +105,17 @@ int spa_parser(char* data, int size, int pkt_ip_src){
     if(strncmp(_spa->md5sum, verify_md5, md5less) == 0){
       printf("MD5 CORRECTE\n");
 
+      int current_time = (int)time(NULL);
+
+      if(abs(current_time - _spa->timestamp) > 240){
+	printf("trop tard pour le replay gros bouffon\n");
+	return -1;
+      }
+      
+      if(add_check_4_replay(_spa->md5sum) == -1){
+	return -1;
+      }
+      
       // APPEL DU CODE DE 20/100
     
     }
