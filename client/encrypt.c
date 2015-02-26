@@ -73,9 +73,9 @@ char* encrypt(char* key, char* text, int ciphertext_len){
   // text_len = strlen(text)+1;
   text_len = ciphertext_len;
   ciphertext = aes_encrypt(&en, (unsigned char *)text, &text_len);
-  printf("plain text : %s\n", text);
-  printf("key : %s\n", key);
-  printf("encypted text : %s\n", ciphertext);
+  //printf("plain text : %s\n", text);
+  //printf("key : %s\n", key);
+  //printf("encypted text : %s\n", ciphertext);
 
   return (char*)ciphertext;
 }
