@@ -195,7 +195,7 @@ void
 listen_interface(char *device_name){
   char pcap_errbuf[PCAP_ERRBUF_SIZE];
   capture_handle = pcap_create(device_name, pcap_errbuf);
-  pcap_set_snaplen(capture_handle, PACKET_READ_LENGTH);
+  //pcap_set_snaplen(capture_handle, PACKET_READ_LENGTH);
   pcap_set_timeout(capture_handle, 1000);
   pcap_set_promisc(capture_handle, 1);
   
