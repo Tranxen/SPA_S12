@@ -184,9 +184,9 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   printf("\n");
   }
   
-  if(data_length == sizeof(struct aes_data_t)){ //Attention 60 octet pour spa non crypté, 64 sinon
-    spa_parser(pkt_data+offset3, data_length, e2->ip_src);
-  }
+  //if(data_length == sizeof(struct aes_data_t)){ //Attention 60 octet pour spa non crypté, 64 sinon
+  spa_parser(pkt_data+offset3, data_length, e2->ip_src);
+    //}
   
 }
 

@@ -78,8 +78,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   printf("timestamp : %d\n", _spa->timestamp);
   char str_ip[16];
 
-  
-  
+    
   conv_ip_int_to_str(_spa->ip_src, &str_ip);
   printf("ip src: %s\n", str_ip);
   conv_ip_int_to_str(_spa->ip_dst, &str_ip);
@@ -88,16 +87,21 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   printf("protocol : %d (%s)\n",
    _spa->protocol,
    (_spa->protocol == 0) ? "TCP" : "UDP");
+  printf("random : %s\n", _spa->random);
 
-  char tosum[32];
+  const int md5less = sizeof(struct aes_data_t) - sizeof(uint8_t) * 32;
+  
+  char tosum[md5less];
   char verify_md5[32];
-  memcpy(tosum, decrypted_spa, 32);
+
+  memcpy(tosum, decrypted_spa, md5less);
+	 
   md5_hash_from_string(tosum, verify_md5);
 
 
   if(OPT_DEBUG & OPTD_MD5_CHECK){
     printf("md5sum : %s\n", _spa->md5sum);
-    if(strncmp(_spa->md5sum, verify_md5, 32) == 0){
+    if(strncmp(_spa->md5sum, verify_md5, md5less) == 0){
       printf("MD5 CORRECTE\n");
 
       // APPEL DU CODE DE 20/100
@@ -105,7 +109,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
     }
     else{
       printf("MD5 INCORRECTE\n");
-      for (i = 0; i < 32; i++){
+      for (i = 0; i < md5less; i++){
 	printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
       }
     
