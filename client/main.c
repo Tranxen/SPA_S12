@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 	struct aes_data_t spa;
 
 	memset(spa.username, '\0', 16);
-	strcat(spa.username, username);
+	strcat((char*)spa.username, username);
 
 	spa.timestamp = (int)time(NULL);
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 	memcpy(payload, &spa, payload_len);
 
 	memset(spa.md5sum, '\0', sizeof(spa.md5sum));
-	md5_hash_from_string(payload, spa.md5sum);
+	md5_hash_from_string(payload, (char*)spa.md5sum);
 
 	char *cipher_text = encrypt(key, (char*)&spa, sizeof(struct aes_data_t));
 
