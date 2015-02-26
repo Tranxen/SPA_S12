@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
 	spa.port = port_requested;
 	spa.protocol = protocol_requested;
 
+	rand_string((char*)spa.random, 16);
 
 	int payload_len = sizeof(struct aes_data_t) - sizeof(char) * 32;
 	char payload[payload_len];
