@@ -146,7 +146,8 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   conv_ip_int_to_str(_spa->ip_dst, args->IPserveur);
   //strcpy(args->IPserveur, ip_dest_server);
   //args->IPserveur = ip_dest_server;
-  strcpy(args->IPclient, IPCLIENT);
+  //strcpy(args->IPclient, IPCLIENT);
+  conv_ip_int_to_str(_spa->ip_src, args->IPclient);
   //args->IPclient = IPCLIENT;
   args->dport = _spa->port;
 
