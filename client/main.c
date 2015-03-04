@@ -9,7 +9,7 @@
 #ifndef DEBUG
 #define DEBUG 0
 #endif
-	
+
 
 #define TCP 0
 #define UDP 1
@@ -22,7 +22,7 @@ void lower(char *str1) {
 	while(*str1!='\0') {
 		if(*str1<91&&*str1>64)
 			*str1=*str1+32;
-		str1++;                                                        
+		str1++;
 	}
 }
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	
+
 	char *username = argv[1];
 	char *ip_addr_str = argv[2];
 	char *ip_requested = argv[3];
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 	memcpy(payload, &spa, payload_len);
 
 	memset(spa.md5sum, '\0', sizeof(spa.md5sum));
-	md5_hash_from_string(payload, (char*)spa.md5sum);
+	md5_hash_from_string(payload, payload_len, (char*)spa.md5sum);
 
 	char *cipher_text = encrypt(key, (char*)&spa, sizeof(struct aes_data_t));
 

@@ -53,7 +53,7 @@ void spa_init(){
 int spa_parser(char* data, int size, int pkt_ip_src){
 
   printf("\nOPT_DEBUG = %x\n", OPT_DEBUG);
-  
+
   if(size != sizeof(struct aes_data_t)){
     printf("ERREUR : taille du paquet SPA non valide\n");
     printf("\t - %d instead of %d\n", size, sizeof(struct aes_data_t));
@@ -61,30 +61,30 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   }
 
   char* decrypted_spa = decrypt("fabien brillant", data, sizeof(struct aes_data_t));
-  
+
   _spa = (struct aes_data_t*)(decrypted_spa);
 
   printf("OPT_DEBUG : %d\n", OPT_DEBUG);
   printf("OPTD_IP : %d\n", OPTD_IP_CHECK);
   printf("RES : %d\n", 0x06 & 0x01);
-  
+
   if((OPT_DEBUG & OPTD_IP_CHECK) != 0 &&
      _spa->ip_src != pkt_ip_src){
     printf("ERREUR : l'ip source du paquet ne correspond pas à l'ip contenu dans spa\n");
-    
+
     return -1;
   }
-  
+
   int i = 0;
 
 
   printf("--\n");
-    
+
   printf("username : %s\n", _spa->username);
   printf("timestamp : %d\n", _spa->timestamp);
   char str_ip[16];
 
-    
+
   conv_ip_int_to_str(_spa->ip_src, &str_ip);
   printf("ip src: %s\n", str_ip);
   conv_ip_int_to_str(_spa->ip_dst, &str_ip);
@@ -96,13 +96,13 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   printf("random : %s\n", _spa->random);
 
   const int md5less = sizeof(struct aes_data_t) - sizeof(uint8_t) * 32;
-  
+
   char tosum[md5less];
   char verify_md5[32];
 
   memcpy(tosum, decrypted_spa, md5less);
-   
-  md5_hash_from_string(tosum, verify_md5);
+
+  md5_hash_from_string(tosum, md5less, verify_md5);
 
 
   if(OPT_DEBUG & OPTD_MD5_CHECK){
@@ -116,23 +116,23 @@ int spa_parser(char* data, int size, int pkt_ip_src){
 	printf("trop tard pour le replay gros bouffon\n");
 	return -1;
       }
-      
+
       if(add_check_4_replay(_spa->md5sum) == -1){
 	return -1;
       }
-      
+
       // APPEL DU CODE DE 20/100
-    
+
     }
     else{
       printf("MD5 INCORRECTE\n");
       for (i = 0; i < md5less; i++){
   printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
       }
-    
+
     }
-  }   
-  
+  }
+
   pthread_t threadIptables;
   args_iptables_struct*args = malloc(sizeof *args);
   //args->proto =  ? "TCP" : "UDP";
@@ -140,7 +140,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   strcpy(args->proto, "TCP");
   else
   strcpy(args->proto, "UDP");
-    
+
   //args->IPserveur = str_ip;
   //printf("HERE : %s\n", ip_dest_server);
   conv_ip_int_to_str(_spa->ip_dst, args->IPserveur);
@@ -152,10 +152,10 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   args->dport = _spa->port;
 
   pthread_create (& threadIptables, NULL, changeiptables, args);
-   
 
-  
-  
+
+
+
   return 0;
 
 }
