@@ -109,8 +109,9 @@ int main(int argc, char *argv[]) {
 
     // Load seed and counter for user
     printf("Loading client seed and counter\n");
+    char file[] = "client.secret";
     struct client_entry_t client;
-    load("client.secret", &client);
+    load(file, &client);
     printf("Seed : %s\n", client.seed);
     printf("Counter : %d\n", (int)client.counter);
 
@@ -124,6 +125,8 @@ int main(int argc, char *argv[]) {
 	char *cipher_text = encrypt(OTP, (char*)&spa, sizeof(struct aes_data_t));
 
 	send_udp_packet(interface, ip_addr_str, dest_port, cipher_text);
+
+    update_counter(file, client);
 
 	return 0;
 }
