@@ -4,6 +4,8 @@
 #include "../md5.h"
 #include "encrypt.h"
 #include <string.h>
+#include "counter.h"
+#include "../server/secret.h"
 
 
 #ifndef DEBUG
@@ -66,6 +68,9 @@ int main(int argc, char *argv[]) {
 	char key[] = "fabien brillant";
 
 
+
+
+
 	if (strcmp(protocol_requested_str, "tcp") == 0)
 		protocol_requested = TCP;
 	else if (strcmp(protocol_requested_str, "udp") == 0)
@@ -100,6 +105,22 @@ int main(int argc, char *argv[]) {
 
 	memset(spa.md5sum, '\0', sizeof(spa.md5sum));
 	md5_hash_from_string(payload, payload_len, (char*)spa.md5sum);
+
+
+    // Load seed and counter for user
+    printf("Loading client seed and counter\n");
+    struct client_entry_t client;
+    load("client.secret", &client);
+    printf("Seed : %s\n", client.seed);
+    printf("Counter : %d\n", (int)client.counter);
+
+    char buff[128];
+    char hotp_res[9] = {0}; // 8digis + \0
+
+    hotp(client.seed, strlen(client.seed), client.counter, 8, buff, hotp_res, 9);
+
+    printf("HOTP = %s\n", hotp_res);
+
 
 	char *cipher_text = encrypt(key, (char*)&spa, sizeof(struct aes_data_t));
 
