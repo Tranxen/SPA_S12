@@ -3,6 +3,7 @@
 #include "spa_parser.h"
 #include "decrypt.h"
 #include "antireplay.h"
+#include "secret.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -46,7 +47,7 @@ void *changeiptables(void* args)
 
 void spa_init(){
 
-  _spa = malloc(sizeof(struct aes_data_t));
+  clientry_read("test.fdp");
 
 }
 
@@ -60,8 +61,39 @@ int spa_parser(char* data, int size, int pkt_ip_src){
     return -1;
   }
 
-  char* decrypted_spa = decrypt("fabien brillant", data, sizeof(struct aes_data_t));
+  // =========== CODE RELOU ================
 
+  char str_ip0[16]; memset(str_ip0, '\0', 16);
+  conv_ip_int_to_str(pkt_ip_src, str_ip0);
+  
+  int counter = clientry_get_counter(str_ip0);
+
+  if(counter < 0){
+    printf("Erreur : impossible de trouver une correspondance pour cette ip\n");
+    return -1;    
+  }
+
+  char hotp_res[9]; //8 digits + \0
+  memset(hotp_res, '\0', 9);
+
+  char seed[16];
+  clientry_get_seed(seed, str_ip0);
+
+  char stupid[128];
+    
+  hotp(seed, strlen(seed), counter, 8, stupid, hotp_res, 9);
+  // appel de la fonction hotp pour obtenir hotp_res
+
+  clientry_inc_counter(str_ip0);
+
+  printf("NEW KEY : %s\n", hotp_res);
+  
+  char* decrypted_spa = decrypt(hotp_res, data, sizeof(struct aes_data_t));
+
+  
+
+  // =======================================
+  
   _spa = (struct aes_data_t*)(decrypted_spa);
 
   printf("OPT_DEBUG : %d\n", OPT_DEBUG);
