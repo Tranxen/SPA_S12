@@ -33,4 +33,13 @@ void load(const char* file, struct client_entry_t* client) {
 
 void update_counter(const char* file, struct client_entry_t client) {
     //TOOD
+
+  FILE* fd = fopen(file, "w+");
+
+  if(!fd){printf("??\n");exit(-1);}
+  
+  fprintf(fd, "%s / %d\n", client.seed, ++client.counter);
+
+  fclose(fd);
+  
 }
