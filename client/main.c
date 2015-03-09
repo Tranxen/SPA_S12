@@ -115,14 +115,13 @@ int main(int argc, char *argv[]) {
     printf("Counter : %d\n", (int)client.counter);
 
     char buff[128];
-    char hotp_res[9] = {0}; // 8digis + \0
+    char OTP[9] = {0}; // 8digis + \0
 
-    hotp(client.seed, strlen(client.seed), client.counter, 8, buff, hotp_res, 9);
+    hotp(client.seed, strlen(client.seed), client.counter, 8, buff, OTP, 9);
 
-    printf("HOTP = %s\n", hotp_res);
+    printf("HOTP = %s\n", OTP);
 
-
-	char *cipher_text = encrypt(key, (char*)&spa, sizeof(struct aes_data_t));
+	char *cipher_text = encrypt(OTP, (char*)&spa, sizeof(struct aes_data_t));
 
 	send_udp_packet(interface, ip_addr_str, dest_port, cipher_text);
 
