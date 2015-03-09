@@ -240,6 +240,8 @@ main(int argc, char *argv[]){
   u_short test = 0x08;
 
   printf("-> %x\n", test);
+
+  spa_init();
   
   /*  e1 = malloc(sizeof(struct eth_hdr));
   e2 = malloc(sizeof(struct ipv4_hdr));

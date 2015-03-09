@@ -52,13 +52,12 @@ hotp(const u_char *key, size_t keylen, u_long counter, int ndigits, char *buf10,
   /* Sanity check max # digits */
   if (ndigits < 1)
     ndigits = 1;
-
-  /* Generate decimal digits */
+  
   if (buf10 != NULL) {
     snprintf(buf10, buflen, "%0*d", ndigits < max10 ? ndigits : max10,
 	     ndigits < max10 ? value % powers10[ndigits - 1] : value);
   }
-
+  
   /* Generate hexadecimal digits */
   if (buf16 != NULL) {
     snprintf(buf16, buflen, "%0*x", ndigits < max16 ? ndigits : max16,

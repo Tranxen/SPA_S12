@@ -17,7 +17,7 @@ void clientry_read(const char* file){
   
   FILE* fdp = fopen(file, "r");
 
-  if(!fdp){printf("??\n"); exit(-1);}
+  if(!fdp){printf("?%s?\n", file); exit(-1);}
 
   char ip[16]; memset(ip, '\0', 16);
   char seed[16]; memset(seed, '\0', 16);
@@ -71,6 +71,13 @@ int get_index_from_ip(char* ip){
     if(strncmp(ip, clientry[i].ip, 16) == 0)
       return i;
 
+    /*
+    printf("echec : \n");
+    int a = 0;
+    for ( a = 0; a < 16; a++ ){
+      printf("%c - %c\n", clientry[i].ip[a], ip[a]);
+    }
+    */
   }
 
   return -1;
@@ -84,6 +91,17 @@ int clientry_get_counter(char* ip){
 
   return clientry[a].counter;
 
+}
+
+int clientry_get_seed(char* seed, char* ip){
+
+  memset(seed, '\0', 16);
+  int a = get_index_from_ip(ip);
+  if(a < 0) return -1;
+
+  strcat(seed, clientry[a].seed);
+
+  return 0;
 }
 
 void clientry_inc_counter(char* ip){
