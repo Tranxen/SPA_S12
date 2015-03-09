@@ -14,7 +14,7 @@
 #define OPTD_REPLAY_CHECK 0x8
 #define OPTD_USELESS_2 0x10
 
-#define OPT_DEBUG (0x4 | 0x8) //FAUT PAS OUBLIER LES ()
+#define OPT_DEBUG (0x1 | 0x4 | 0x8) //FAUT PAS OUBLIER LES ()
 
 char* IPCLIENT ="182.168.2.2";
 typedef struct {
@@ -84,7 +84,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   hotp(seed, strlen(seed), counter, 8, stupid, hotp_res, 9);
   // appel de la fonction hotp pour obtenir hotp_res
 
-  clientry_inc_counter(str_ip0);
+
 
   printf("NEW KEY : %s\n", hotp_res);
   
@@ -165,6 +165,8 @@ int spa_parser(char* data, int size, int pkt_ip_src){
     }
   }
 
+  clientry_inc_counter(str_ip0); // si tout va bien on incrémente le compteur
+ 
   pthread_t threadIptables;
   args_iptables_struct*args = malloc(sizeof *args);
   //args->proto =  ? "TCP" : "UDP";
