@@ -14,13 +14,7 @@ struct aes_data_t{
   uint8_t random[16];
   uint8_t md5sum[32];
 
-};
-
-struct udp_data_t{
-
-  char header[3];
-  struct aes_data_t data;
-
+  
 };
 
 #endif

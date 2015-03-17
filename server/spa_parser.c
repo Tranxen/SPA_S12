@@ -22,6 +22,7 @@ typedef struct {
   char IPserveur[33];
   char IPclient[33];
   int dport;
+  char md5sum[32];
 } args_iptables_struct;
 
 
@@ -37,11 +38,13 @@ void *changeiptables(void* args)
       argums->proto, argums->IPserveur, argums->IPclient, argums->dport);
   system(regle);
 
-
   sleep(30);
   sprintf(regle, "iptables -D FORWARD -p %s -d %s -s %s --dport %d -m state --state NEW -j ACCEPT",
    argums->proto, argums->IPserveur, argums->IPclient, argums->dport);
   system(regle);
+
+  del_check_4_replay(argums->md5sum);
+  
 }
 
 
@@ -83,8 +86,6 @@ int spa_parser(char* data, int size, int pkt_ip_src){
     
   hotp(seed, strlen(seed), counter, 8, stupid, hotp_res, 9);
   // appel de la fonction hotp pour obtenir hotp_res
-
-
 
   printf("NEW KEY : %s\n", hotp_res);
   
@@ -136,6 +137,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
 
   md5_hash_from_string(tosum, md5less, verify_md5);
 
+  // SI PAQUET INVALIDE => TEJ ICI !
 
   if(OPT_DEBUG & OPTD_MD5_CHECK){
     printf("md5sum : %s\n", _spa->md5sum);
@@ -186,9 +188,6 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   args->dport = _spa->port;
 
   pthread_create (& threadIptables, NULL, changeiptables, args);
-
-
-
 
   return 0;
 
