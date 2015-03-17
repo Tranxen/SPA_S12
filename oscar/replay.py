@@ -12,17 +12,21 @@ def customAction(packet):
 
     print "Packet #%s: %s ==> %s" % (packetCount, packet[0][1].src, packet[0][1].dst)
 
+    rawLoad = packet.getlayer(Raw).load
+
     packet.show()
 
-    sys.exit(1)
-    
+    print "RAW = %s " % (rawLoad)
 
-#sniff(filter="udp and port 7777",prn=customAction)
+    sys.exit(1)
+
+
+sniff(filter="udp and port 7777",prn=customAction)
 
 raw = "\x12e\xaf'~\xff_9\xf4\x9dn\x89R\xbd/v~u\nZ2!\xe7u\x1a\x004\xb6<\xfaqf3\t\xb2\x91\xa6/\xc0?m\xd0V\x1a\x06\xff\xb7\xc3\xfb\x167\xad\xadIM?\x180\xb1\x97)\xf3\x1a!"
 
 """
-raw correspond to 
+raw correspond to
 username : toto
 timestamp : 1424271490
 ip src: 10.0.2.15
