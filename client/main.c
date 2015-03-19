@@ -31,13 +31,13 @@ void lower(char *str1) {
 
 int main(int argc, char *argv[]) {
   srand(time(NULL));
-  
+
   if (argc < 6) {
-    printf("Usage : %s username ip ip_requested port_requested tcp/udp [-i interface]\n", argv[0]);
+    printf("Usage : %s username ip ip_requested port_requested tcp/udp [-d delay] [-i interface]\n", argv[0]);
     printf("example : %s toto 127.0.0.1 192.168.1.1 22 tcp\n", argv[0]);
     return 0;
   }
-  
+
 
   char *username = argv[1];
   char *ip_addr_str = argv[2];
@@ -47,39 +47,45 @@ int main(int argc, char *argv[]) {
   lower(protocol_requested_str);
   int protocol_requested;
   char *interface = NULL;
-  
+  int delay;
+
   int c;
-  
-  while ((c = getopt (argc, argv, "i:")) != -1) {
+
+  while ((c = getopt (argc, argv, "i:d:")) != -1) {
     switch (c) {
     case 'i':
       interface = optarg;
       break;
+    case 'd':
+      delay = atoi(optarg);
+      break;
     case '?':
       if (optopt == 'i')
-	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+	   fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'd')
+        fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
       else
 	fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
     }
   }
-  
-  
+
+
   if (strcmp(protocol_requested_str, "tcp") == 0)
     protocol_requested = TCP;
   else if (strcmp(protocol_requested_str, "udp") == 0)
     protocol_requested = UDP;
-  
+
   int dest_port = APP_PORT;//rand_range(1, 49151);
-  
+
   struct aes_data_t spa;
-  
+
   memset(spa.username, '\0', 16);
   strcat((char*)spa.username, username);
-  
+
   spa.timestamp = (int)time(NULL);
-	
+
   struct in_addr inp;
 
   inet_aton(get_ip_addr(interface), &inp);
@@ -91,8 +97,8 @@ int main(int argc, char *argv[]) {
   spa.port = port_requested;
   spa.protocol = protocol_requested;
 
-  spa.opentime = 51;
-  
+  spa.opentime = delay;
+
   rand_string((char*)spa.random, 16);
 
   printf("RANDOM = %s\n", spa.random);
@@ -107,7 +113,7 @@ int main(int argc, char *argv[]) {
 
   printf("from (%d)=>\n", payload_len);
   fflush(stdout);
-  fwrite(payload, sizeof(char), payload_len, stdout); 
+  fwrite(payload, sizeof(char), payload_len, stdout);
   fflush(stdout);
   printf("\n\nmd5(client) = %s\n", (char*)spa.md5sum);
 
@@ -133,13 +139,13 @@ int main(int argc, char *argv[]) {
   char fabtest22[sizeof(struct aes_data_t)];
 
   memcpy(fabtest22, (char*)&spa, sizeof(struct aes_data_t));
-  
+
   for(ii = 0; ii < sizeof(struct aes_data_t); ii++){
 
       printf("%d : %x\n", ii, fabtest22[ii]);
 
   }
-  
+
   char *cipher_text = encrypt(OTP, (char*)&spa, sizeof(struct aes_data_t));
 
   char fabtest[255];
@@ -166,11 +172,11 @@ int main(int argc, char *argv[]) {
 	 sizeof(char), 96,
 	 stdout);
   */
-  
-  
+
+
   send_udp_packet(interface, ip_addr_str, dest_port, cipher_text);
-    
+
   update_counter(file, client);
-    
+
   return 0;
 }
