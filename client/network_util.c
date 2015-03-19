@@ -34,7 +34,7 @@ void send_udp_packet(char* device, char* ip_dest, int port_dest, char* payload) 
 	u_int32_t ip_addr;
 	uint16_t  dest_port;
     int bytes_written;
-    int payload_size = sizeof(struct aes_data_t);
+    int payload_size = 96;
 
     
 	/* Generating a random id */

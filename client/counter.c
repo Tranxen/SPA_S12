@@ -38,7 +38,7 @@ void update_counter(const char* file, struct client_entry_t client) {
 
   if(!fd){printf("??\n");exit(-1);}
   
-  fprintf(fd, "%s / %d\n", client.seed, ++client.counter);
+  fprintf(fd, "%s / %d\n", client.seed, (int)++client.counter);
 
   fclose(fd);
   

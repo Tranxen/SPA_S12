@@ -12,8 +12,8 @@
 #include "../common.h"
 
 #define PACKET_READ_LENGTH 64
-
-#define DEBUG_PKT 0
+#define APP_PORT 7777
+#define DEBUG_PKT 1
 
 static void signal_handler(int);
 static void pkt_process(u_char *, const struct pcap_pkthdr *,
@@ -76,11 +76,12 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   offset2 = offset1 + sizeof(struct ipv4_hdr);
   e3 = (struct udp_hdr*)(pkt_data + offset2);
 
+    
   offset3 = offset2 + sizeof(struct udp_hdr);
   
   if(e2->ip_protocol != 17){
     //printf("not a UDP packet => don't care\n");
-    return;
+    return; //not a UDP packet => don't care
   }
   
   // ========== LECTURE ETHERNET ===============
@@ -183,8 +184,12 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   }
   printf("\n");
   }
-  
-  //if(data_length == sizeof(struct aes_data_t)){ //Attention 60 octet pour spa non crypté, 64 sinon
+  if(ntohs(e3->dst_port) != APP_PORT){
+    printf("echec de port : found %d\n", ntohs(e3->dst_port));
+    return; //mauvais port pour spa
+  }
+    
+  //if(data_length == sizeof(struct aes_data_t)){ //Attention 95 octet pour spa non crypté, 96 sinon
   spa_parser(pkt_data+offset3, data_length, e2->ip_src);
     //}
   
@@ -241,6 +246,20 @@ main(int argc, char *argv[]){
 
   printf("-> %x\n", test);
 
+  printf("-----------------\n");
+  struct aes_data_t lolp;
+  printf("username : %d\n", sizeof(lolp.username));
+  printf("timestmp : %d\n", sizeof(lolp.timestamp));
+  printf("ip_src   : %d\n", sizeof(lolp.ip_src));
+  printf("ip_dst   : %d\n", sizeof(lolp.ip_dst));
+  printf("port     : %d\n", sizeof(lolp.port));
+  printf("protocol : %d\n", sizeof(lolp.protocol));
+  printf("opentime : %d\n", sizeof(lolp.opentime));
+  printf("random   : %d\n", sizeof(lolp.random));
+  printf("md5sum   : %d\n", sizeof(lolp.md5sum));
+  printf("-----------------------------------\n");
+  printf("all      : %d\n", sizeof(lolp));
+  
   spa_init();
   
   /*  e1 = malloc(sizeof(struct eth_hdr));

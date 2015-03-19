@@ -23,6 +23,7 @@ typedef struct {
   char IPclient[33];
   int dport;
   char md5sum[32];
+  uint16_t opentime;
 } args_iptables_struct;
 
 
@@ -38,12 +39,19 @@ void *changeiptables(void* args)
       argums->proto, argums->IPserveur, argums->IPclient, argums->dport);
   system(regle);
 
-  sleep(30);
+  // entre 1 et 180 sec
+  if(argums->opentime > 0 && argums->opentime < 180)
+    sleep(argums->opentime);
+  else  
+    sleep(30);
+  
   sprintf(regle, "iptables -D FORWARD -p %s -d %s -s %s --dport %d -m state --state NEW -j ACCEPT",
    argums->proto, argums->IPserveur, argums->IPclient, argums->dport);
   system(regle);
 
   del_check_4_replay(argums->md5sum);
+
+  free(argums);
   
 }
 
@@ -58,12 +66,12 @@ int spa_parser(char* data, int size, int pkt_ip_src){
 
   printf("\nOPT_DEBUG = %x\n", OPT_DEBUG);
 
-  if(size != sizeof(struct aes_data_t)){
-    printf("ERREUR : taille du paquet SPA non valide\n");
+  //  if(size != sizeof(struct aes_data_t)){
+  //printf("ERREUR : taille du paquet SPA non valide\n");
     printf("\t - %d instead of %d\n", size, sizeof(struct aes_data_t));
-    return -1;
-  }
+    //}
 
+  
   // =========== CODE RELOU ================
 
   char str_ip0[16]; memset(str_ip0, '\0', 16);
@@ -72,7 +80,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   int counter = clientry_get_counter(str_ip0);
 
   if(counter < 0){
-    printf("Erreur : impossible de trouver une correspondance pour cette ip\n");
+    printf("Erreur : impossible de trouver une correspondance pour cette ip (%s)\n", str_ip0);
     return -1;    
   }
 
@@ -88,13 +96,28 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   // appel de la fonction hotp pour obtenir hotp_res
 
   printf("NEW KEY : %s\n", hotp_res);
-  
-  char* decrypted_spa = decrypt(hotp_res, data, sizeof(struct aes_data_t));
 
-  
 
+  /*fwrite(data, sizeof(char), 96,
+	 stdout);
+  */
+  
+  char* decrypted_spa = decrypt(hotp_res,
+				data,
+				96);
+				
   // =======================================
   
+  int ii = 0;
+  printf("====>non cripte:\n");
+  for(ii = 0; ii < sizeof(struct aes_data_t); ii++){
+    
+    printf("%d : %x\n", ii, decrypted_spa[ii]);
+    
+  }
+  printf("\n\n");
+  
+
   _spa = (struct aes_data_t*)(decrypted_spa);
 
   printf("OPT_DEBUG : %d\n", OPT_DEBUG);
@@ -126,6 +149,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   printf("protocol : %d (%s)\n",
    _spa->protocol,
    (_spa->protocol == 0) ? "TCP" : "UDP");
+  printf("opentime : %d\n", _spa->opentime);
   printf("random : %s\n", _spa->random);
 
   const int md5less = sizeof(struct aes_data_t) - sizeof(uint8_t) * 32;
@@ -133,21 +157,37 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   char tosum[md5less];
   char verify_md5[32];
 
+  memset(tosum, '\0', md5less);
+  memset(verify_md5, '\0', 32);
+  
   memcpy(tosum, decrypted_spa, md5less);
 
-  md5_hash_from_string(tosum, md5less, verify_md5);
+  printf("++++++++++++++++++\n");
+  ii = 0;
+  for(ii = 0; ii < md5less; ii++){
+    printf("%d : %c\n", ii, tosum[ii]);
+  }
+  
+  md5_hash_from_string(decrypted_spa, md5less, verify_md5);
 
   // SI PAQUET INVALIDE => TEJ ICI !
 
   if(OPT_DEBUG & OPTD_MD5_CHECK){
-    printf("md5sum : %s\n", _spa->md5sum);
-    if(strncmp(_spa->md5sum, verify_md5, md5less) == 0){
+    printf("md5sum(recv) : %s\n", _spa->md5sum);
+    printf("from (%d) =>\n", md5less);
+
+    fflush(stdout);
+    fwrite(decrypted_spa, sizeof(char), md5less, stdout);
+    fflush(stdout);
+    
+    printf("\n\nmd5sum(calc) : %s\n", verify_md5);
+    if(strncmp(_spa->md5sum, verify_md5, 32) == 0){
       printf("MD5 CORRECTE\n");
 
       int current_time = (int)time(NULL);
 
       if(abs(current_time - _spa->timestamp) > 240){
-	printf("trop tard pour le replay gros bouffon\n");
+	printf("date pérminée\n");
 	return -1;
       }
 
@@ -170,7 +210,7 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   clientry_inc_counter(str_ip0); // si tout va bien on incrémente le compteur
  
   pthread_t threadIptables;
-  args_iptables_struct*args = malloc(sizeof *args);
+  args_iptables_struct *args = malloc(sizeof *args);
   //args->proto =  ? "TCP" : "UDP";
   if (_spa->protocol == 0)
   strcpy(args->proto, "TCP");
@@ -187,7 +227,10 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   //args->IPclient = IPCLIENT;
   args->dport = _spa->port;
 
+  args->opentime = _spa->opentime;
+  
   pthread_create (& threadIptables, NULL, changeiptables, args);
+
 
   return 0;
 

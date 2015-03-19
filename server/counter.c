@@ -8,7 +8,6 @@
 
 #define MAX_ENTRY 128
 
-
 static struct client_entry_t clientry[MAX_ENTRY];
 static int nb_entry = 0;
 

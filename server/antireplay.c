@@ -6,6 +6,34 @@
 #include "txlist.h"
 
 static item* lst = NULL;
+static int list_count = 0;
+
+// Fonction appellée si des gamins s'amuses à remplir la liste dans le cache
+// *** OBSOLET ***
+/*
+int troll_chech_4_replay(char* spa_md5){
+
+  int troll_count = 0;
+
+  item *currP, *prevP;
+
+  prevP = NULL;
+  
+  for (currP = lst; currP != NULL; prevP = currP, currP = currP->next) {
+
+    if (strncmp(currP->data,spa_md5, 32) == 0) { 
+
+      troll_count++;
+
+      if(troll_count > 100)
+	return -1;
+      
+    }
+  }
+
+  return 0;
+  }*/
+
 
 void del_check_4_replay(char* spa_md5){
 
@@ -24,7 +52,9 @@ void del_check_4_replay(char* spa_md5){
       }
 
       free(currP);
-
+      list_count--;
+      
+      
       return;
     }
   }
@@ -34,6 +64,13 @@ void del_check_4_replay(char* spa_md5){
 
 int add_check_4_replay(char* spa_md5){
 
+  if(list_count > 1000){
+
+    printf("ERREUR : Trop d'ajout dans le cache\n");
+    return -1;
+
+  }
+  
   if(!lst){
     lst = (item *)malloc(sizeof(item));
     lst->next = NULL;
@@ -47,7 +84,7 @@ int add_check_4_replay(char* spa_md5){
   while(curr) {
 
     if(strncmp(spa_md5, curr->data, 32) == 0){
-      printf("HASH déjà existant => REJEU !!!\n");
+      printf("ERREUR : HASH déjà existant => REJEU !!!\n");
       return -1;
     }
     
@@ -56,8 +93,10 @@ int add_check_4_replay(char* spa_md5){
 
   // add
   printf("add\n");
-  list_add(lst, spa_md5);
 
+  list_add(lst, spa_md5);
+  list_count++;
+  
   return 0;
 }
 
