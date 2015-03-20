@@ -16,6 +16,9 @@
 
 #define OPT_DEBUG (0x1 | 0x4 | 0x8)
 
+#define MAX_TIME_OBSOLET 30 // en seconde
+#define MAX_ENTRIES 1000
+
 typedef struct {
   char proto[4];
   char IPserveur[33];
@@ -38,7 +41,7 @@ void *changeiptables(void* args)
 
   args_iptables_struct *argums = args;
 
-  char regle[1000];
+  char regle[MAX_ENTRIES];
 
   if(add_check_4_replay(argums->md5sum) == -1){
     return;
@@ -191,8 +194,8 @@ int spa_parser(char* data, int size, int pkt_ip_src){
 
   int current_time = (int)time(NULL);
 
-  // 240 temps max authorisé entre 2 timestamp
-  if(abs(current_time - _spa->timestamp) > 240){
+  // 30 sec : temps max authorisé entre 2 timestamp
+  if(abs(current_time - _spa->timestamp) > MAX_TIME_OBSOLET){
     printf("date pérminée\n");
     free(decrypted_spa);
     return -1;

@@ -8,6 +8,8 @@
 static item* lst = NULL;
 static int list_count = 0;
 
+#define MAX_ENTRIES 1000
+
 // retire une entrée dans le cache (appellée
 // lorsque le bail arrive à expiration)
 
@@ -43,7 +45,7 @@ void del_check_4_replay(char* spa_md5){
 
 int add_check_4_replay(char* spa_md5){
 
-  if(list_count > 1000){
+  if(list_count > MAX_ENTRIES){
 
     printf("ERREUR : Trop d'ajouts dans le cache\n");
     return -1;
