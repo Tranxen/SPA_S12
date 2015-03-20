@@ -1,5 +1,5 @@
-#ifndef SECRET_H_
-#define SECRET_H_
+#ifndef COUNTER_H_
+#define COUNTER_H_
 
 struct client_entry_t {
 
