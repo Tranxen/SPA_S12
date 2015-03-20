@@ -1,4 +1,5 @@
-
+#ifndef COUNTER_H_
+#define COUNTER_H_
 
 struct client_entry_t{
 
@@ -17,3 +18,4 @@ int clientry_get_seed(char* seed, char* ip);
 
 void clientry_inc_counter(char* userip);
 
+#endif

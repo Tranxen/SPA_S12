@@ -14,19 +14,13 @@
 
 
 
-/* Powers of ten */
-static const int    powers10[] = { 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 1000000000 };
-
 /*
  * Generate an OTP using the algorithm specified in RFC 4226,
  */
 
 void
-hotp(const u_char *key, size_t keylen, u_long counter, int ndigits, char *buf10, char *buf16, size_t buflen)
+hotp(const u_char *key, size_t keylen, u_long counter, char *buf, size_t buflen)
 {
-  const int max10 = sizeof(powers10) / sizeof(*powers10);
-  //printf("max10 : %d (%d)/(%d)\n", max10, sizeof(powers10), sizeof(*powers10));
-  const int max16 = 8;
   const EVP_MD *sha1_md = EVP_sha1();
   u_char hash[EVP_MAX_MD_SIZE];
   u_int hash_len;
@@ -49,44 +43,9 @@ hotp(const u_char *key, size_t keylen, u_long counter, int ndigits, char *buf10,
   value = ((hash[offset] & 0x7f) << 24) | ((hash[offset + 1] & 0xff) << 16)
     | ((hash[offset + 2] & 0xff) << 8) | (hash[offset + 3] & 0xff);
 
-  /* Sanity check max # digits */
-  if (ndigits < 1)
-    ndigits = 1;
-  
-  if (buf10 != NULL) {
-    snprintf(buf10, buflen, "%0*d", ndigits < max10 ? ndigits : max10,
-	     ndigits < max10 ? value % powers10[ndigits - 1] : value);
-  }
-  
   /* Generate hexadecimal digits */
-  if (buf16 != NULL) {
-    snprintf(buf16, buflen, "%0*x", ndigits < max16 ? ndigits : max16,
-	     ndigits < max16 ? (value & ((1 << (4 * ndigits)) - 1)) : value);
+  if (buf != NULL) {
+    snprintf(buf, buflen, "%08x", value);
   }
 }
 
-/*
-int main(int argc, char** argv){
-
-  u_char seed[] = "nique ta mere\0";
-  int seed_len = strlen(seed);
-
-  u_char bufdec[32];memset(bufdec, '\0', 32);
-  u_char bufhex[32];memset(bufhex, '\0', 32);
-
-  int i = 0;
-
-  for (i ; i < 10; i++){
-  
-    hotp(seed, seed_len, i, 16, bufdec, bufhex, 16);
-
-    printf("-----------------------------\n");
-    printf("dec : %s\n", bufdec);
-    printf("hex : %s\n", bufhex);
-    
-  }
-  
-  return 0;
-
-}
-*/

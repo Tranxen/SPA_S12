@@ -12,11 +12,10 @@ static struct client_entry_t clientry[MAX_ENTRY];
 static int nb_entry = 0;
 
 void clientry_read(const char* file){
-
   
   FILE* fdp = fopen(file, "r");
-
-  if(!fdp){printf("?%s?\n", file); exit(-1);}
+  
+  if(!fdp){printf("%s not found\n", file); exit(-1);}
 
   char ip[16]; memset(ip, '\0', 16);
   char seed[16]; memset(seed, '\0', 16);
@@ -25,10 +24,6 @@ void clientry_read(const char* file){
   nb_entry = 0;
   
   while(fscanf(fdp, "%s / %s / %d\n", ip, seed, &counter) != EOF){
-    /*
-    printf("ip : %s\n", ip);
-    printf("seed : %s\n", seed);
-    */
     
     memset(clientry[nb_entry].ip, '\0', 16);
     memset(clientry[nb_entry].seed, '\0', 16);
@@ -69,14 +64,6 @@ int get_index_from_ip(char* ip){
 
     if(strncmp(ip, clientry[i].ip, 16) == 0)
       return i;
-
-    /*
-    printf("echec : \n");
-    int a = 0;
-    for ( a = 0; a < 16; a++ ){
-      printf("%c - %c\n", clientry[i].ip[a], ip[a]);
-    }
-    */
   }
 
   return -1;
@@ -112,19 +99,3 @@ void clientry_inc_counter(char* ip){
 
 }
 
-/*
-int main(int argc, char** argv){
-
-  clientry_read("test.fdp");
-
-  printf("test 13.221.52.9 : %d\n", clientry_get_counter("13.221.52.9"));
-  clientry_inc_counter("13.221.52.9");
-  clientry_inc_counter("13.221.52.9");
-  clientry_inc_counter("13.221.52.9");
-  printf("test 13.221.52.9 : %d\n", clientry_get_counter("13.221.52.9"));
-  printf("test 72.232.211.45 : %d\n", clientry_get_counter("72.232.211.45"));
-  printf("test 23.121.92.3 : %d\n", clientry_get_counter("23.121.92.3"));
-  printf("test 23.121.92.39 : %d\n", clientry_get_counter("23.121.92.39"));
-  
-}
-*/

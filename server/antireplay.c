@@ -8,32 +8,8 @@
 static item* lst = NULL;
 static int list_count = 0;
 
-// Fonction appellée si des gamins s'amuses à remplir la liste dans le cache
-// *** OBSOLET ***
-/*
-int troll_chech_4_replay(char* spa_md5){
-
-  int troll_count = 0;
-
-  item *currP, *prevP;
-
-  prevP = NULL;
-  
-  for (currP = lst; currP != NULL; prevP = currP, currP = currP->next) {
-
-    if (strncmp(currP->data,spa_md5, 32) == 0) { 
-
-      troll_count++;
-
-      if(troll_count > 100)
-	return -1;
-      
-    }
-  }
-
-  return 0;
-  }*/
-
+// retire une entrée dans le cache (appellée
+// lorsque le bail arrive à expiration)
 
 void del_check_4_replay(char* spa_md5){
 
@@ -53,20 +29,23 @@ void del_check_4_replay(char* spa_md5){
 
       free(currP);
       list_count--;
-      
-      
+      printf("Hash : ");
+      fwrite(spa_md5, sizeof(char), 32, stdout);
+      printf(" expired : %d entries left\n", list_count);
       return;
     }
   }
 
-
 }
+
+// ajoute une entrée dans le cache (appellée
+// lorsqu'un client a envoyé un paquet SPA valide
 
 int add_check_4_replay(char* spa_md5){
 
   if(list_count > 1000){
 
-    printf("ERREUR : Trop d'ajout dans le cache\n");
+    printf("ERREUR : Trop d'ajouts dans le cache\n");
     return -1;
 
   }
@@ -76,8 +55,6 @@ int add_check_4_replay(char* spa_md5){
     lst->next = NULL;
   }
   
-  // verif
-
   item * curr;
   curr = lst->next;
 
@@ -91,68 +68,13 @@ int add_check_4_replay(char* spa_md5){
     curr = curr->next ;
   }
 
-  // add
-  printf("add\n");
-
   list_add(lst, spa_md5);
   list_count++;
-  
+
+  printf("Hash : ");
+  fwrite(spa_md5, sizeof(char), 32, stdout);
+  printf(" added : %d entries left\n", list_count);
+    
   return 0;
 }
 
-/*
-int main(int argc, char** argv){
-
-  printf("lol\n");
-
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienba");
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienbb");
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienbc");
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienbd");
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienbe");
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienbf");
-  add_check_4_replay("fabienbgfabienbgfabienbgfabienbg");
-
-  if(!lst->next){
-
-    printf("Eh non lol, la liste est toujours vide\n");
-
-  }
-
-  item * curr;
-  curr = lst->next;
-
-  while(curr) {
-
-    write(1, curr->data, 32);
-    printf("\n");
-
-    curr = curr->next ;
-  }
-  
-  printf("------------ test deletion -------------\n");
-
-  //item * pp = lst;
-  del_check_4_replay("fabienbgfabienbgfabienbgfabienbc");
-  del_check_4_replay("fabienbgfabienbgfabienbgfabienbe");
-  del_check_4_replay("fabienbgfabienbgfabienbgfabienba");
-  del_check_4_replay("fabienbgfabienbgfabienbgfabienbg");
-    
-
-  printf("----------- draw ------------\n");
-
-  curr = lst->next;
-  //curr = lst;
-
-  while(curr) {
-
-    write(1, curr->data, 32);
-    printf("\n");
-
-    curr = curr->next ;
-  }
- 
-
-}
-
-*/

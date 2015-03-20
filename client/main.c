@@ -1,9 +1,10 @@
 #include "network_util.h"
 #include <time.h>
+#include <string.h>
+#include <sys/types.h>
 #include "../util.h"
 #include "../md5.h"
 #include "encrypt.h"
-#include <string.h>
 #include "counter.h"
 #include "../server/secret.h"
 
@@ -30,7 +31,10 @@ void lower(char *str1) {
 }
 
 int main(int argc, char *argv[]) {
-  srand(time(NULL));
+
+  unsigned _s_ = ((unsigned)getpid() << 16) | (0xFFFFu & (unsigned)time(NULL));
+
+  srand(_s_);
 
   if (argc < 6) {
     printf("Usage : %s username ip ip_requested port_requested tcp/udp [-d delay] [-i interface]\n", argv[0]);
@@ -111,10 +115,7 @@ int main(int argc, char *argv[]) {
   memset(spa.md5sum, '\0', sizeof(spa.md5sum));
   md5_hash_from_string(payload, payload_len, (char*)spa.md5sum);
 
-  printf("from (%d)=>\n", payload_len);
-  fflush(stdout);
-  fwrite(payload, sizeof(char), payload_len, stdout);
-  fflush(stdout);
+
   printf("\n\nmd5(client) = %s\n", (char*)spa.md5sum);
 
   // Load seed and counter for user
@@ -125,54 +126,13 @@ int main(int argc, char *argv[]) {
   printf("Seed : %s\n", client.seed);
   printf("Counter : %d\n", (int)client.counter);
 
-  char buff[128];
   char OTP[9] = {0}; // 8digis + \0
 
-  hotp(client.seed, strlen(client.seed), client.counter, 8, buff, OTP, 9);
+  hotp((unsigned char*)client.seed, strlen(client.seed), client.counter, OTP, 9);
 
   printf("HOTP = %s\n", OTP);
 
-  int ii=0;
-
-  printf("====>non cripte:\n");
-
-  char fabtest22[sizeof(struct aes_data_t)];
-
-  memcpy(fabtest22, (char*)&spa, sizeof(struct aes_data_t));
-
-  for(ii = 0; ii < sizeof(struct aes_data_t); ii++){
-
-      printf("%d : %x\n", ii, fabtest22[ii]);
-
-  }
-
   char *cipher_text = encrypt(OTP, (char*)&spa, sizeof(struct aes_data_t));
-
-  char fabtest[255];
-
-  memset(fabtest, '\0', 255);
-
-  //strncat(fabtest, cipher_text, 255);
-
-
-
-  /*
-  printf("====>data:\n");
-  for(ii = 0; ii < 96; ii++){
-
-    printf("%d : %x\n", ii, cipher_text[ii]);
-
-  }
-  */
-
-  //printf("\n\n");
-
-
-  /*  fwrite(cipher_text,
-	 sizeof(char), 96,
-	 stdout);
-  */
-
 
   send_udp_packet(interface, ip_addr_str, dest_port, cipher_text);
 

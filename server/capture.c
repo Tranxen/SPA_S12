@@ -13,7 +13,7 @@
 
 #define PACKET_READ_LENGTH 64
 #define APP_PORT 7777
-#define DEBUG_PKT 1
+#define DEBUG_PKT 0
 
 static void signal_handler(int);
 static void pkt_process(u_char *, const struct pcap_pkthdr *,
@@ -66,11 +66,9 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   int offset3 = 0;
   int i = 0;
 
-  //struct eth_hdr* e1 = malloc(sizeof(struct eth_hdr));
   e1 = (struct eth_hdr*)(pkt_data);
 
   offset1 = sizeof(struct eth_hdr);
-  //struct ipv4_hdr* e2 = malloc(sizeof(struct ipv4_hdr));
   e2 = (struct ipv4_hdr*)(pkt_data + offset1);
 
   offset2 = offset1 + sizeof(struct ipv4_hdr);
@@ -80,9 +78,13 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   offset3 = offset2 + sizeof(struct udp_hdr);
   
   if(e2->ip_protocol != 17){
-    //printf("not a UDP packet => don't care\n");
     return; //not a UDP packet => don't care
   }
+
+  if(ntohs(e3->dst_port) != APP_PORT){
+    return; //mauvais port pour spa
+  }
+
   
   // ========== LECTURE ETHERNET ===============
 
@@ -91,13 +93,14 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   printf("\n==== %d ====\n", pckt_id); pckt_id++;
 
 
-  printf("DEBUG RAW eth_hdr : ");
-  for(i = 0; i < 14; i++){
-    printf("%x:", pkt_data[i]);
-  }
-  printf("\n");
-
   if(DEBUG_PKT >= 1){
+
+    printf("DEBUG RAW eth_hdr : ");
+    for(i = 0; i < 14; i++){
+      printf("%x:", pkt_data[i]);
+    }
+    printf("\n");
+  
     printf("\tmac src : ");
     for(i = 0; i < 6; i++){
       printf("%x:", e1->eth_address_src[i]);
@@ -113,13 +116,14 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   
   // =========== LECTURE IP =======================
 
-  printf("DEBUG RAW ipv4_hdr : ");
-  for(i = offset1; i < offset1 + sizeof(struct ipv4_hdr); i++){
-    printf("%x:", pkt_data[i]);
-  }
-  printf("\n");
-
   if(DEBUG_PKT >= 1){
+  
+    printf("DEBUG RAW ipv4_hdr : ");
+    for(i = offset1; i < offset1 + sizeof(struct ipv4_hdr); i++){
+      printf("%x:", pkt_data[i]);
+    }
+    printf("\n");
+
   
     printf("\thdrlen : %x\n", e2->ip_hdr_len);
     printf("\tip_version : %x\n", e2->ip_version);
@@ -145,14 +149,15 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
 
   
   // =========== LECTURE UDP =======================
-  
-  printf("DEBUG RAW udp_hdr : ");
-  for(i = offset2; i < offset2 + sizeof(struct udp_hdr); i++){
-    printf("%x:", pkt_data[i]);
-  }
-  printf("\n");
 
   if(DEBUG_PKT >= 1){
+    
+    printf("DEBUG RAW udp_hdr : ");
+    for(i = offset2; i < offset2 + sizeof(struct udp_hdr); i++){
+      printf("%x:", pkt_data[i]);
+    }
+    printf("\n");
+
     printf("\tsrc port : %d\n", ntohs(e3->src_port));
     printf("\tdst port : %d\n", ntohs(e3->dst_port));
     printf("\tlength   : %d\n", ntohs(e3->length));
@@ -162,36 +167,26 @@ pkt_process(u_char *param, const struct pcap_pkthdr *pkt_hdr,
   // ============ LECTURE DATA =====================
 
   int data_length = ntohs(e3->length) - sizeof(struct udp_hdr);
-  printf("\tdata len : %d\n", data_length);
-
-  /*
-  char* data_raw = NULL;
-  data_raw = malloc(sizeof(char)*data_length);
-  memset(data_raw, '\0', data_length);
-  */
-
-
-  printf("DEBUG RAW DATA (hex) : ");
-  for(i = offset3; i < offset3 + data_length; i++){
-    printf("%x:", pkt_data[i]);
-  }
-  printf("\n");
 
   if(DEBUG_PKT >= 1){
-  printf("DEBUG RAW DATA (ascii) : ");
-  for(i = offset3; i < offset3 + data_length; i++){
-    printf("%c", pkt_data[i]);
+      
+    printf("DEBUG RAW DATA (hex) : ");
+    for(i = offset3; i < offset3 + data_length; i++){
+      printf("%x:", pkt_data[i]);
+    }
+    printf("\n");
+
+    printf("DEBUG RAW DATA (ascii) : ");
+    for(i = offset3; i < offset3 + data_length; i++){
+      printf("%c", pkt_data[i]);
+    }
+    printf("\n");
   }
-  printf("\n");
-  }
-  if(ntohs(e3->dst_port) != APP_PORT){
-    printf("echec de port : found %d\n", ntohs(e3->dst_port));
-    return; //mauvais port pour spa
-  }
-    
-  //if(data_length == sizeof(struct aes_data_t)){ //Attention 95 octet pour spa non crypté, 96 sinon
-  spa_parser(pkt_data+offset3, data_length, e2->ip_src);
-    //}
+
+  //96 est la taille du paquet SPA chiffrée
+  if(data_length == 96) 
+    spa_parser(pkt_data+offset3, data_length, e2->ip_src);
+
   
 }
 
@@ -242,33 +237,7 @@ main(int argc, char *argv[]){
   int i = 1;
   char * device_name = NULL;
 
-  u_short test = 0x08;
-
-  printf("-> %x\n", test);
-
-  printf("-----------------\n");
-  struct aes_data_t lolp;
-  printf("username : %d\n", sizeof(lolp.username));
-  printf("timestmp : %d\n", sizeof(lolp.timestamp));
-  printf("ip_src   : %d\n", sizeof(lolp.ip_src));
-  printf("ip_dst   : %d\n", sizeof(lolp.ip_dst));
-  printf("port     : %d\n", sizeof(lolp.port));
-  printf("protocol : %d\n", sizeof(lolp.protocol));
-  printf("opentime : %d\n", sizeof(lolp.opentime));
-  printf("random   : %d\n", sizeof(lolp.random));
-  printf("md5sum   : %d\n", sizeof(lolp.md5sum));
-  printf("-----------------------------------\n");
-  printf("all      : %d\n", sizeof(lolp));
-  
   spa_init();
-  
-  /*  e1 = malloc(sizeof(struct eth_hdr));
-  e2 = malloc(sizeof(struct ipv4_hdr));
-  e3 = malloc(sizeof(struct udp_hdr));
-  */
-  
-  //Ex2 metrics = protocol_metrics_create();
-  //session_list = session_list_create();
 
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);
@@ -282,12 +251,5 @@ main(int argc, char *argv[]){
 
   printf("\nTotal nb pkt : %d, total len : %d o\n\n", total_pkt, total_len);
 
-  //Ex2 protocol_metrics_destroy(metrics);
-  //session_list_destroy(session_list);
-
-  /*  free(e1);
-  free(e2);
-  free(e3);
-  */
   return EXIT_SUCCESS;
 }

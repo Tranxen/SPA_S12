@@ -14,9 +14,8 @@
 #define OPTD_REPLAY_CHECK 0x8
 #define OPTD_USELESS_2 0x10
 
-#define OPT_DEBUG (0x1 | 0x4 | 0x8) //FAUT PAS OUBLIER LES ()
+#define OPT_DEBUG (0x1 | 0x4 | 0x8)
 
-char* IPCLIENT ="182.168.2.2";
 typedef struct {
   char proto[4];
   char IPserveur[33];
@@ -28,52 +27,78 @@ typedef struct {
 
 
 static struct aes_data_t* _spa = NULL;
+pthread_mutex_t lock1;
+pthread_mutex_t lock2;
+
+
 
 void *changeiptables(void* args)
 {
+  pthread_mutex_lock(&lock1);
+
   args_iptables_struct *argums = args;
 
   char regle[1000];
 
+  if(add_check_4_replay(argums->md5sum) == -1){
+    return;
+  }
+  
   sprintf(regle, "iptables -A FORWARD -p %s -d %s -s %s --dport %d -m state --state NEW -j ACCEPT",
       argums->proto, argums->IPserveur, argums->IPclient, argums->dport);
   system(regle);
+
+  pthread_mutex_unlock(&lock1);
 
   // entre 1 et 180 sec
   if(argums->opentime > 0 && argums->opentime < 180)
     sleep(argums->opentime);
   else  
     sleep(30);
+
+  pthread_mutex_lock(&lock2);
   
   sprintf(regle, "iptables -D FORWARD -p %s -d %s -s %s --dport %d -m state --state NEW -j ACCEPT",
    argums->proto, argums->IPserveur, argums->IPclient, argums->dport);
   system(regle);
 
   del_check_4_replay(argums->md5sum);
-
+  
   free(argums);
+
+  pthread_mutex_unlock(&lock2);
   
 }
 
 
 void spa_init(){
 
-  clientry_read("test.fdp");
+  clientry_read("server.secret");
+
+  if(pthread_mutex_init(&lock1, NULL) != 0)
+    {
+      printf("\n mutex 1 init failed\n");
+      exit(-1);
+    }
+
+  
+  if(pthread_mutex_init(&lock2, NULL) != 0)
+    {
+      printf("\n mutex 2 init failed\n");
+      exit(-1);
+    }
 
 }
 
 int spa_parser(char* data, int size, int pkt_ip_src){
 
-  printf("\nOPT_DEBUG = %x\n", OPT_DEBUG);
+  // ==============================
 
-  //  if(size != sizeof(struct aes_data_t)){
-  //printf("ERREUR : taille du paquet SPA non valide\n");
-    printf("\t - %d instead of %d\n", size, sizeof(struct aes_data_t));
-    //}
+  // Récupération de la valeur du
+  // compteur HOTP pour un client donné
 
+  // ==============================
   
-  // =========== CODE RELOU ================
-
   char str_ip0[16]; memset(str_ip0, '\0', 16);
   conv_ip_int_to_str(pkt_ip_src, str_ip0);
   
@@ -90,57 +115,95 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   char seed[16];
   clientry_get_seed(seed, str_ip0);
 
-  char stupid[128];
-    
-  hotp(seed, strlen(seed), counter, 8, stupid, hotp_res, 9);
-  // appel de la fonction hotp pour obtenir hotp_res
+  // ==============================
+
+  // appel de la fonction hotp pour
+  // obtenir une nouvelle clé (hotp_res)
+  // +
+  // Dechiffrement du paquet SPA
+  // avec la nouvelle clé
+  
+  // ==============================
+  
+  hotp(seed, strlen(seed), counter, hotp_res, 9);
 
   printf("NEW KEY : %s\n", hotp_res);
 
-
-  /*fwrite(data, sizeof(char), 96,
-	 stdout);
-  */
-  
+  // 96 correspond à la taille du packet SPA chiffré
   char* decrypted_spa = decrypt(hotp_res,
 				data,
 				96);
 				
-  // =======================================
+  // ==============================
   
-  int ii = 0;
-  printf("====>non cripte:\n");
-  for(ii = 0; ii < sizeof(struct aes_data_t); ii++){
-    
-    printf("%d : %x\n", ii, decrypted_spa[ii]);
-    
-  }
-  printf("\n\n");
-  
-
   _spa = (struct aes_data_t*)(decrypted_spa);
 
-  printf("OPT_DEBUG : %d\n", OPT_DEBUG);
-  printf("OPTD_IP : %d\n", OPTD_IP_CHECK);
-  printf("RES : %d\n", 0x06 & 0x01);
+  // ==============================
 
+  // Vérification du MD5sum
+  // md5less : taile de la structure
+  // SPA sans le md5
+  
+  // ==============================
+
+ 
+  const int md5less = sizeof(struct aes_data_t) - sizeof(uint8_t) * 32;
+  char verify_md5[32];
+  memset(verify_md5, '\0', 32);
+  md5_hash_from_string(decrypted_spa,
+		       md5less,
+		       verify_md5);
+
+
+  if(OPT_DEBUG & OPTD_MD5_CHECK){
+
+    if(strncmp(_spa->md5sum, verify_md5, 32) != 0){
+      printf("MD5 INCORRECTE\n");
+      printf("md5sum(calc) : %s\n", verify_md5);
+      printf("md5sum(recv) : %s\n", _spa->md5sum);
+      free(decrypted_spa);
+      return -1;
+    }
+    else{
+      printf("MD5 CORRECTE\n");
+    }
+  }
+ 
+  // ==============================
+
+  // Vérification anti-usurpation
+
+  // ==============================
+  
   if((OPT_DEBUG & OPTD_IP_CHECK) != 0 &&
      _spa->ip_src != pkt_ip_src){
-    printf("ERREUR : l'ip source du paquet ne correspond pas à l'ip contenu dans spa\n");
-
+    printf("ERREUR : l'ip source du paquet ne correspond pas à l'ip contenu dans le paquet spa\n");
+    // Ca va être bien avec les NATs...
+    free(decrypted_spa);
     return -1;
   }
 
+  // ==============================
+
+  // Vérification anti-rejeu
+
+  // ==============================
+
+  int current_time = (int)time(NULL);
+
+  // 240 temps max authorisé entre 2 timestamp
+  if(abs(current_time - _spa->timestamp) > 240){
+    printf("date pérminée\n");
+    free(decrypted_spa);
+    return -1;
+  }
+  
+  
   int i = 0;
-
-
-  printf("--\n");
 
   printf("username : %s\n", _spa->username);
   printf("timestamp : %d\n", _spa->timestamp);
   char str_ip[16];
-
-
   conv_ip_int_to_str(_spa->ip_src, &str_ip);
   printf("ip src: %s\n", str_ip);
   conv_ip_int_to_str(_spa->ip_dst, &str_ip);
@@ -152,86 +215,29 @@ int spa_parser(char* data, int size, int pkt_ip_src){
   printf("opentime : %d\n", _spa->opentime);
   printf("random : %s\n", _spa->random);
 
-  const int md5less = sizeof(struct aes_data_t) - sizeof(uint8_t) * 32;
-
-  char tosum[md5less];
-  char verify_md5[32];
-
-  memset(tosum, '\0', md5less);
-  memset(verify_md5, '\0', 32);
-  
-  memcpy(tosum, decrypted_spa, md5less);
-
-  printf("++++++++++++++++++\n");
-  ii = 0;
-  for(ii = 0; ii < md5less; ii++){
-    printf("%d : %c\n", ii, tosum[ii]);
-  }
-  
-  md5_hash_from_string(decrypted_spa, md5less, verify_md5);
-
-  // SI PAQUET INVALIDE => TEJ ICI !
-
-  if(OPT_DEBUG & OPTD_MD5_CHECK){
-    printf("md5sum(recv) : %s\n", _spa->md5sum);
-    printf("from (%d) =>\n", md5less);
-
-    fflush(stdout);
-    fwrite(decrypted_spa, sizeof(char), md5less, stdout);
-    fflush(stdout);
-    
-    printf("\n\nmd5sum(calc) : %s\n", verify_md5);
-    if(strncmp(_spa->md5sum, verify_md5, 32) == 0){
-      printf("MD5 CORRECTE\n");
-
-      int current_time = (int)time(NULL);
-
-      if(abs(current_time - _spa->timestamp) > 240){
-	printf("date pérminée\n");
-	return -1;
-      }
-
-      if(add_check_4_replay(_spa->md5sum) == -1){
-	return -1;
-      }
-
-      // APPEL DU CODE DE 20/100
-
-    }
-    else{
-      printf("MD5 INCORRECTE\n");
-      for (i = 0; i < md5less; i++){
-  printf("%c - %c : %s\n", _spa->md5sum[i], verify_md5[i], (_spa->md5sum[i] == verify_md5[i]) ? "[OK]" : "[ER]");
-      }
-
-    }
-  }
-
-  clientry_inc_counter(str_ip0); // si tout va bien on incrémente le compteur
+ 
+  // Tout va bien, on incrémente le compteur HOTP
+  clientry_inc_counter(str_ip0); 
  
   pthread_t threadIptables;
   args_iptables_struct *args = malloc(sizeof *args);
-  //args->proto =  ? "TCP" : "UDP";
+
   if (_spa->protocol == 0)
-  strcpy(args->proto, "TCP");
+    strcpy(args->proto, "TCP");
   else
-  strcpy(args->proto, "UDP");
-
-  //args->IPserveur = str_ip;
-  //printf("HERE : %s\n", ip_dest_server);
-  conv_ip_int_to_str(_spa->ip_dst, args->IPserveur);
-  //strcpy(args->IPserveur, ip_dest_server);
-  //args->IPserveur = ip_dest_server;
-  //strcpy(args->IPclient, IPCLIENT);
-  conv_ip_int_to_str(_spa->ip_src, args->IPclient);
-  //args->IPclient = IPCLIENT;
-  args->dport = _spa->port;
-
-  args->opentime = _spa->opentime;
+    strcpy(args->proto, "UDP");
   
+  conv_ip_int_to_str(_spa->ip_dst, args->IPserveur);
+  conv_ip_int_to_str(_spa->ip_src, args->IPclient);
+  args->dport = _spa->port;
+  args->opentime = _spa->opentime;
+  strncpy(args->md5sum, _spa->md5sum,32);
+  
+ 
   pthread_create (& threadIptables, NULL, changeiptables, args);
 
-
+  free(decrypted_spa);
+  
   return 0;
 
 }

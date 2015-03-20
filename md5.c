@@ -1,5 +1,7 @@
 #include "md5.h"
 
+// calcul le md5sum de la chaine passé en paramètre
+
 void md5_hash_from_string (char *string, int size, char *hash)
 {
   int i;
